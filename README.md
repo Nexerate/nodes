@@ -1,7 +1,7 @@
 # Nexerate Nodes
 Nexerate Nodes is a framework for creating node based hierarchy tools. 
 
-### Basic Setup:
+# Basic Setup:
 ```csharp
 using Nexerate.Nodes;
 using System;
@@ -25,7 +25,7 @@ public class ExampleHierarchy : NodeAsset<ExampleNode>
 }
 ```
 
-### Features:
+# Features:
 - ## Node Asset
     - A `NodeAsset` is the `ScriptableObject` that holds your `Node` hierarchy. It can be created by adding the `[CreateAssetMenu]` 
     attribute to your class that derives from `NodeAsset<T>`. 
