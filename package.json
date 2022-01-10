@@ -1,5 +1,5 @@
 {
-  "name": "com.nexerate.nexeratenodes",
+  "name": "com.nexerate.nodes",
   "version": "1.0.0",
   "displayName": "Nexerate Nodes",
   "description": "Framework for creating hierarchy tools that do not rely on GameObjects.",
