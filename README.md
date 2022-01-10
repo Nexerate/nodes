@@ -1,7 +1,7 @@
 # Nexerate Nodes
 Nexerate Nodes is a framework for creating node based hierarchy tools. 
 
-How to install through package manager:
+## How to install through the Unity Package Manager:
 1. Copy this link
 ```
 https://github.com/Nexerate/nodes.git
