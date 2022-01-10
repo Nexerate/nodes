@@ -110,3 +110,9 @@ public class ExampleHierarchy : NodeAsset<ExampleNode>
         }
     }
     ```
+    
+- ## Attributes:
+    - `[AddNodeMenu]` Decide where in the "Add Node" menu your `Node` should show up.
+    - `[RequireNodeComponents]` Decide what components are required by this `ComponentNode`. Required components are added automatically, and cannot be removed. 
+        Attribute is inherited.
+    - `[DisallowMultiple]` Add this attribute to a `NodeComponent` to disallow multiple components of this type on the same `Node`.
