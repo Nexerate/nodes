@@ -45,7 +45,7 @@ public class ExampleHierarchy : NodeAsset<ExampleNode>
 - ## Node Component
     - A `NodeComponent<T>` can be added to component nodes that either are of type `T` or derive from `T`. By themselves, node components don't do much, 
     but here are some examples of how they can be used:
-    - ### Input
+    ### Input
     ```csharp
     using Nexerate.Nodes;
     using UnityEngine;
@@ -75,7 +75,7 @@ public class ExampleHierarchy : NodeAsset<ExampleNode>
         }
     }
     ```
-    - ### Iterate over
+    ### Iterate over
     ```csharp
     using Nexerate.Nodes;
     using UnityEngine;
