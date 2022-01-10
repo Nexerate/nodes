@@ -2,9 +2,12 @@
 Nexerate Nodes is a framework for creating node based hierarchy tools. 
 
 How to install through package manager:
+1. Copy this link
 ```
-
+https://github.com/Nexerate/nodes.git
 ```
+2. Open the Package Manager and navigate to the plus icon in the upper left corner.
+3. Choose `Add package from git URL`, paste the URL in, and click `Add`.
 
 # Basic Setup:
 ```csharp
