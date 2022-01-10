@@ -1,0 +1,29 @@
+{
+  "name": "com.nexerate.nodes",
+  "version": "1.0.0",
+  "displayName": "Nexerate Nodes",
+  "description": "Framework for creating hierarchy tools that do not rely on GameObjects.",
+  "unity": "2021.2",
+  "dependencies": {
+    "com.unity.inputsystem": "1.2.0"
+  },
+  "keywords": [
+    "graph",
+    "node",
+    "framework",
+    "tool",
+    "hierarchy"
+  ],
+  "author": {
+    "name": "Nexerate",
+    "email": "erl1strom@gmail.com",
+    "url": "https://www.nexerate.com"
+  },
+  "samples": [
+    {
+      "displayName": "Node Hierarchy",
+      "description": "Contains an example of how you can create your own node hierarchy.",
+      "path": "Samples~/SamplesNodeHierarchy"
+    }
+  ]
+}
