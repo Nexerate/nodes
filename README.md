@@ -1,6 +1,11 @@
 # Nexerate Nodes
 Nexerate Nodes is a framework for creating node based hierarchy tools. 
 
+How to install through package manager:
+```
+
+```
+
 # Basic Setup:
 ```csharp
 using Nexerate.Nodes;
