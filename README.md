@@ -34,7 +34,7 @@ public class ExampleHierarchy : NodeAsset<ExampleNode>
     The `Node` class itself is abstract, but you can derive from it to create custom nodes for your tool. Nodes have their own hierarchies 
     that you can lock to prevent people from changing them. <br><br>
     
-    ### This is possible thorugh the following methods:
+    ### This is possible through the following methods:
     - `Node.LockChildren()` Lock the children directly below this `Node`. These children can be moved around, but not reparented to other nodes, and they cannot be deleted.
     - `Node.LockHierarchy()` Lock the entire hierarchy below this `Node`. No nodes with this `Node` as an ancestor can be reparented. You can also not add any new nodes to its 
     hierarchy nor delete any nodes in it.
