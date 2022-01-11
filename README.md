@@ -36,7 +36,9 @@ public class ExampleHierarchy : NodeAsset<ExampleNode>
 # Features:
 - ## Node Asset
     - A `NodeAsset` is the `ScriptableObject` that holds your `Node` hierarchy. It can be created by adding the `[CreateAssetMenu]` 
-    attribute to your class that derives from `NodeAsset<T>`. 
+    attribute to your class that derives from `NodeAsset<T>`. `T` is the minimum requiremenent for nodes in your hierarchy. Only nodes of type `T` or nodes derived from `T` 
+    will show up in the "Add Node" menu. This has the main purpose of predictability (you know what type of nodes you have to deal with), but also separation 
+    (your nodes will not be mixed with the nodes of other people, unless designed to).
 - ## Node
     - The hierarchy is built up of nodes that are linked together through their relationship with their parent `Node`. 
     The `Node` class itself is abstract, but you can derive from it to create custom nodes for your tool. Nodes have their own hierarchies 
