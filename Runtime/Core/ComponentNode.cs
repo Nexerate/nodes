@@ -49,7 +49,6 @@ namespace Nexerate.Nodes
                     //Do this for each component in the attribute
                     foreach (var component in attribute.Components)
                     {
-                        //if (!requiredComponents.Contains(component) && typeof(INodeComponent).IsAssignableFrom(component) && !component.IsAbstract)
                         if (!requiredComponents.Contains(component) && ComponentCompatibleWithThisNode(component))
                         {
                             requiredComponents.Add(component);

@@ -8,6 +8,9 @@ using UnityEngine;
 
 namespace Nexerate.Nodes.Editor
 {
+    /// <summary>
+    /// <see cref="NodeComponentDrawer"/> is the default drawer for node components where a drawer is not specified.
+    /// </summary>
     [CustomPropertyDrawer(typeof(NodeComponent), true)]
     public class NodeComponentDrawer : PropertyDrawer
     {
