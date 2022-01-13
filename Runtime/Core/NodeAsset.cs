@@ -52,6 +52,7 @@ namespace Nexerate.Nodes
 
         public void Enable()
         {
+            Debug.Log("Enable");
             var root = Root;
             root.ChildrenChanged -= OnGraphChangedInternal;
             root.ChildrenChanged += OnGraphChangedInternal;
@@ -85,6 +86,8 @@ namespace Nexerate.Nodes
 
         void ReCompileNodeList()
         {
+            //Ok, so problem _might_ be that since this is called twice for every sway, there is a small chance a node
+            //its children will get excluded from the transaction.
             nodes.Clear();
             CompileNodeListFromHierarchy(Root);
         }

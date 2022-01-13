@@ -1,8 +1,8 @@
 {
-    "name": "com.nexerate.nodes",
+    "name": "Nexerate.Nodes",
     "rootNamespace": "Nexerate.Nodes",
     "references": [
-        "Unity.InputSystem"
+        "GUID:75469ad4d38634e559750d17036d5f7c"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

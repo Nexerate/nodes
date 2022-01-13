@@ -7,34 +7,6 @@ using System;
 
 namespace Nexerate.Nodes
 {
-    public enum HierarchyLockState
-    {
-        /// <summary>
-        /// You can freely add and remove nodes from the hierarchy, except for nodes with <see cref="ParentLockState"/> set to <see cref="ParentLockState.Locked"/>.
-        /// </summary>
-        None,
-        /// <summary>
-        /// You can not add nor remove any child from <see cref="Node.children"/>. You can still add and remove children of children.
-        /// </summary>
-        ChildrenLocked,
-        /// <summary>
-        /// You cannot add nor remove nodes from the hierarchy.
-        /// </summary>
-        HierarchyLocked
-    }
-
-    public enum ParentLockState
-    {
-        /// <summary>
-        /// Depending on ancestor <see cref="HierarchyLockState"/>, you might be able to change the parent of this <see cref="Node"/>. 
-        /// </summary>
-        Auto,
-        /// <summary>
-        /// You cannot change the parent of this <see cref="Node"/>.
-        /// </summary>
-        Locked
-    }
-
     /// <summary>
     /// Base class for all Nodes.
     /// Derived classes must add the [<seealso cref="SerializableAttribute"/>] attribute.
@@ -43,8 +15,8 @@ namespace Nexerate.Nodes
     [AddNodeMenu("Node")]
     public class Node
     {
-        #region Enabled
-        [SerializeField] bool enabled = true;
+        #region Enabled (Add back when hierarchy elements can be disabled)
+        /*[SerializeField] bool enabled = true;
         public bool Enabled => enabled;
         public bool EnabledInHierarchy => enabled && !DisabledInHierarchy();
 
@@ -60,7 +32,7 @@ namespace Nexerate.Nodes
         /// <summary>
         /// If any parent is disabled, this node is disabled in the hierarchy.
         /// </summary>
-        bool DisabledInHierarchy() => GetAncestors().Where(ancestor => !ancestor.enabled).Any();
+        bool DisabledInHierarchy() => GetAncestors().Where(ancestor => !ancestor.enabled).Any();*/
         #endregion
 
         #region Constructors
@@ -97,7 +69,7 @@ namespace Nexerate.Nodes
         #endregion
 
         #region ID
-        [SerializeField, HideInInspector] protected int id = 0;
+        [SerializeField] protected int id = 0;
         public int ID => id;
 
         int GenerateNewID() => id = Guid.NewGuid().ToString().GetHashCode();
@@ -172,7 +144,6 @@ namespace Nexerate.Nodes
                 {
                     parent.children.Remove(this);
                     parent.OnChildrenChangedInternal();
-                    //When this is invoked, this node is nowhere to be found in the hierarchy
                 }
 
                 parent = newParent;
@@ -299,8 +270,6 @@ namespace Nexerate.Nodes
 
             children.Remove(child);
             children.Insert(index, child);
-
-            OnChildrenChangedInternal();
         }
         #endregion
 
@@ -308,8 +277,13 @@ namespace Nexerate.Nodes
         public event Action ChildrenChanged;
         void OnChildrenChangedInternal() 
         {
+            //Nodes that override this function will have their logic executed first.
             OnChildrenChanged();
+
+            //Then comes scripts that have subscribed to this event.
             ChildrenChanged?.Invoke();
+
+            //Lastly, call this function recursively on eventual parent.
             parent?.OnChildrenChangedInternal();
         }
 

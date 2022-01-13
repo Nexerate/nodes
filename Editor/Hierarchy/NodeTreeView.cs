@@ -59,12 +59,16 @@ namespace Nexerate.Nodes.Editor
             root = nodeAsset.Root;
         }
 
+        /// <summary>
+        /// Called when an undo operation is performed.
+        /// </summary>
         void HandleUndo()
         {
+            //Asset is replaced with copy from undo stack.
             //Rebind the TreeView to the new asset located at the same path. 
             InitializeRootAndAsset((NodeAsset)AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GetAssetPath(asset)));
             ReImport();
-            asset.Enable();//OnEnable is not called on the asset created by the undo operation. Initialize manually
+            asset.Enable();//OnEnable is not called on the asset taken from the undo stack. Initialize manually
             RefreshEditor();
             Reload();
         }
@@ -83,7 +87,7 @@ namespace Nexerate.Nodes.Editor
         }
 
         //TODO (When supported, or in 2022 with UI Toolkit TreeView)
-        //Disabled Items (Nodes can be disabled, but it is not shown in the hierarchy)
+        //Disabled Nodes
 
         void BuildRecursive(TreeViewItem item, Node node)
         {
@@ -153,6 +157,10 @@ namespace Nexerate.Nodes.Editor
             //Perform drop
             if (args.performDrop)
             {
+                if (args.parentItem == null)
+                {
+                    Debug.Log("Null");
+                }
                 CleanUpDroppedItems(items, args);
                 Undo.RegisterCompleteObjectUndo(asset, "Reorder Nodes");
 
@@ -206,6 +214,7 @@ namespace Nexerate.Nodes.Editor
                 }
 
                 Undo.FlushUndoRecordObjects();
+                EditorUtility.SetDirty(asset);
                 Reload();
             }
             return DragAndDropVisualMode.Move;
@@ -252,7 +261,6 @@ namespace Nexerate.Nodes.Editor
             return index;
         }
 
-        /// <returns>True unless the item we are trying to drag is the root.</returns>
         protected override bool CanStartDrag(CanStartDragArgs args)
         {
             Node drag = asset.Find(args.draggedItem.id);
@@ -272,9 +280,12 @@ namespace Nexerate.Nodes.Editor
                 Undo.RegisterCompleteObjectUndo(asset, "Rename Node");
                 var node = asset.Find(args.itemID);
                 node.Name = name;
-                Undo.FlushUndoRecordObjects();
 
                 ReImport();
+
+                Undo.FlushUndoRecordObjects();
+                EditorUtility.SetDirty(asset);
+
                 RefreshEditor();
                 Reload();
             }
@@ -346,6 +357,7 @@ namespace Nexerate.Nodes.Editor
                 duplicate.SetParent(nodes[i].Parent);
             }
             Undo.FlushUndoRecordObjects();
+            EditorUtility.SetDirty(asset);
 
             ReImport();
             Reload();
@@ -364,15 +376,16 @@ namespace Nexerate.Nodes.Editor
             }
 
             Undo.FlushUndoRecordObjects();
+            EditorUtility.SetDirty(asset);
 
             ReImport();
-            Reload();
             RefreshEditor(true);
+            Reload();
         }
 
         protected override void ContextClickedItem(int id)
         {
-            Node target = asset.Find(id);
+            Node target = root.Find(id);
 
             GenericMenu menu = new();
 
@@ -401,7 +414,9 @@ namespace Nexerate.Nodes.Editor
                             Undo.RegisterCompleteObjectUndo(asset, "Add Node");
                             Node child = (Node)Activator.CreateInstance(type);
                             child.SetParent(target);
+
                             Undo.FlushUndoRecordObjects();
+                            EditorUtility.SetDirty(asset);
 
                             SetExpanded(id, true);
                             ReImport();
