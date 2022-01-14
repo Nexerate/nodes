@@ -52,7 +52,6 @@ namespace Nexerate.Nodes
 
         public void Enable()
         {
-            Debug.Log("Enable");
             var root = Root;
             root.ChildrenChanged -= OnGraphChangedInternal;
             root.ChildrenChanged += OnGraphChangedInternal;
