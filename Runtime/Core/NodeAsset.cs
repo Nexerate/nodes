@@ -91,9 +91,20 @@ namespace Nexerate.Nodes
             CompileNodeListFromHierarchy(Root);
         }
 
+        /// <summary>
+        /// Find <see cref="Node"/> where <see cref="Node.ID"/> matches <paramref name="id"/>.
+        /// </summary>
         public Node Find(int id)
         {
             return nodes.Where(node => node.ID == id).FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Find nodes where <see cref="Node.Name"/> matches <paramref name="name"/>.
+        /// </summary>
+        public Node[] Find(string name)
+        {
+            return nodes.Where(node => node.Name == name).ToArray();
         }
 
         void CompileNodeListFromHierarchy(Node parent)
