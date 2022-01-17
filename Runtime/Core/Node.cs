@@ -275,6 +275,10 @@ namespace Nexerate.Nodes
         {
             if (child == this) return;
 
+            //Child parent is the same, but child was moved
+            //SetParent will not call HierarchyChanged, so we need to do it ourselves after the reorder has happened
+            bool reorder = child.parent == this;
+
             child.SetParent(this);
 
             //If parent was successfully set, insert the child at the right index
@@ -283,6 +287,7 @@ namespace Nexerate.Nodes
                 children.Remove(child);
                 children.Insert(index, child);
             }
+            if (reorder) OnChildrenChangedInternal();
         }
         #endregion
 
