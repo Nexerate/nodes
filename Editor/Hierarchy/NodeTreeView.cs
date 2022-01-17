@@ -157,10 +157,6 @@ namespace Nexerate.Nodes.Editor
             //Perform drop
             if (args.performDrop)
             {
-                if (args.parentItem == null)
-                {
-                    Debug.Log("Null");
-                }
                 CleanUpDroppedItems(items, args);
                 Undo.RegisterCompleteObjectUndo(asset, "Reorder Nodes");
 
@@ -194,24 +190,15 @@ namespace Nexerate.Nodes.Editor
                     {
                         foreach (var node in nodes)
                         {
-                            //if (!targetParent.HasAncestor(node))
-                            //{
-                                node.SetParent(targetParent);
-                            //}
+                            node.SetParent(targetParent);
                         }
                     }
                     else
                     {
                         for (int i = nodes.Length - 1; i >= 0; i--)
                         {
-                            var node = nodes[i];
-
-                            //Only do parenting if the new parent is not a child of the node 
-                            //if (!targetParent.HasAncestor(node))
-                            //{
-                                insertIndex = GetAdjustedInsertIndex(targetParent, node, insertIndex);
-                                targetParent.InsertChild(insertIndex, node);
-                            //}
+                            insertIndex = GetAdjustedInsertIndex(targetParent, nodes[i], insertIndex);
+                            targetParent.InsertChild(insertIndex, nodes[i]);
                         }
                     }
                     SetExpanded(parent.id, true);
