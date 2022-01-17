@@ -2,7 +2,7 @@
   "name": "com.nexerate.nodes",
   "version": "1.0.0",
   "displayName": "Nexerate Nodes",
-  "description": "Framework for creating hierarchy tools that do not rely on GameObjects.",
+  "description": "Framework for creating node-based hierarchy tools in Unity.",
   "unity": "2021.2",
   "dependencies": {
     "com.unity.inputsystem": "1.2.0"
