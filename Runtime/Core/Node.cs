@@ -136,7 +136,13 @@ namespace Nexerate.Nodes
 
         #region Parent
         [SerializeReference, HideInInspector] protected Node parent;
-        public void SetParent(Node newParent)
+        
+        /// <summary>
+        /// Set the parent of a <see cref="Node"/> to <paramref name="newParent"/>.
+        /// </summary>
+        /// <param name="newParent"></param>
+        /// <returns>True if <paramref name="newParent"/> passed the validation checks and the parenting was successful.</returns>
+        public bool SetParent(Node newParent)
         {
             if (ValidParenting(this, newParent))
             {
@@ -153,7 +159,9 @@ namespace Nexerate.Nodes
                     parent.children.Add(this);
                     parent.OnChildrenChangedInternal();
                 }
+                return true;
             }
+            return false;
         }
 
         public Node Parent => parent;
@@ -266,10 +274,13 @@ namespace Nexerate.Nodes
         {
             if (child == this) return;
 
-            child.SetParent(this);
+            //If parent was successfully set, insert the child at the right index
+            if (child.SetParent(this))
+            {
+                children.Remove(child);
+                children.Insert(index, child);
+            }
 
-            children.Remove(child);
-            children.Insert(index, child);
         }
         #endregion
 
@@ -395,13 +406,5 @@ namespace Nexerate.Nodes
             return path.ToArray();
         } 
         #endregion
-    }
-    public static class NodeExtensions
-    {
-        public static T Rename<T>(this T node, string name) where T : Node
-        {
-            node.Name = name;
-            return node;
-        }
     }
 }

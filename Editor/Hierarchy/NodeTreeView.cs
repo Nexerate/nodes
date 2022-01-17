@@ -1,8 +1,8 @@
 #region Using
 using System.Collections.Generic;
 using UnityEditor.IMGUI.Controls;
-using System.Reflection;
 using UnityEngine.InputSystem;
+using System.Reflection;
 using UnityEngine;
 using UnityEditor;
 using System.Linq;
@@ -134,7 +134,7 @@ namespace Nexerate.Nodes.Editor
                 var node = asset.Find(parent.id);
                 if (node != null)
                 {
-                    if(node.ChildrenLocked || node.HierarchyLocked || node.IsInLockedHierarchy) 
+                    if (node.ChildrenLocked || node.HierarchyLocked || node.IsInLockedHierarchy) 
                     { 
                         return DragAndDropVisualMode.Rejected;
                     }
@@ -186,14 +186,18 @@ namespace Nexerate.Nodes.Editor
                     int insertIndex = parent.id == 0 ? 0 : args.insertAtIndex;
                     Node targetParent = parent.id == 0 ? root: asset.Find(parent.id);
 
+                    //If node hierarchy is not recompiled, then asset.Find(id) might return null
+                    //This, in turn, would mean that all selected nodes will have their parent set to null
+                    //In other words, they will be deleted
+
                     if (args.dragAndDropPosition == DragAndDropPosition.UponItem)
                     {
                         foreach (var node in nodes)
                         {
-                            if (!targetParent.HasAncestor(node))
-                            {
+                            //if (!targetParent.HasAncestor(node))
+                            //{
                                 node.SetParent(targetParent);
-                            }
+                            //}
                         }
                     }
                     else
@@ -203,11 +207,11 @@ namespace Nexerate.Nodes.Editor
                             var node = nodes[i];
 
                             //Only do parenting if the new parent is not a child of the node 
-                            if (!targetParent.HasAncestor(node))
-                            {
+                            //if (!targetParent.HasAncestor(node))
+                            //{
                                 insertIndex = GetAdjustedInsertIndex(targetParent, node, insertIndex);
                                 targetParent.InsertChild(insertIndex, node);
-                            }
+                            //}
                         }
                     }
                     SetExpanded(parent.id, true);
