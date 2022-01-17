@@ -159,9 +159,10 @@ namespace Nexerate.Nodes
                     parent.children.Add(this);
                     parent.OnChildrenChangedInternal();
                 }
-                return true;
             }
-            return false;
+
+            //Parent was successfully set to newParent
+            return parent == newParent;
         }
 
         public Node Parent => parent;
@@ -274,13 +275,14 @@ namespace Nexerate.Nodes
         {
             if (child == this) return;
 
+            child.SetParent(this);
+
             //If parent was successfully set, insert the child at the right index
-            if (child.SetParent(this))
+            if (child.parent == this)
             {
                 children.Remove(child);
                 children.Insert(index, child);
             }
-
         }
         #endregion
 
