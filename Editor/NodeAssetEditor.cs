@@ -33,6 +33,12 @@ namespace Nexerate.Nodes.Editor
 
             asset = (NodeAsset)target;
 
+            if (EditorWindow.HasOpenInstances<NodeHierarchyWindow>())
+            {
+                NodeHierarchyWindow window = EditorWindow.GetWindow<NodeHierarchyWindow>();
+                window.Initialize(target as NodeAsset);
+            }
+
             if (FirstEditor == null) FirstEditor = this;
         }
 
@@ -43,16 +49,20 @@ namespace Nexerate.Nodes.Editor
             return root;
         }
 
+        [Obsolete("Fix bug here")]
         private void OnDisable()
         {
-            RefreshEditor -= Refresh;
-
             //This fixes the bug where context menus created temporary editors that broke the flow
             if (FirstEditor == this)
             {
+                RefreshEditor -= Refresh;
                 FirstEditor = null;
-                NodeHierarchyWindow window = EditorWindow.GetWindow<NodeHierarchyWindow>();
-                window.NodeAsset = null;
+
+                if (EditorWindow.HasOpenInstances<NodeHierarchyWindow>())
+                {
+                    NodeHierarchyWindow window = EditorWindow.GetWindow<NodeHierarchyWindow>();
+                    window.NodeAsset = null;
+                }
             }
         }
 

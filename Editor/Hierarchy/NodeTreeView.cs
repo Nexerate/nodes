@@ -141,19 +141,6 @@ namespace Nexerate.Nodes.Editor
                 }
             }
 
-            /*
-            Drag And Drop:
-            When performing a drop, remember to remove any root from the items list as it can not be dragged.
-
-            Drag Outside Items:
-            Set the parent of all items to the root.
-
-            Drag On/Upon Item/Target:
-            Set the parent of all items to the item.
-
-            Drag Between Items:
-            */
-
             //Perform drop
             if (args.performDrop)
             {
