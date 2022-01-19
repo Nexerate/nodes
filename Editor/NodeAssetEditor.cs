@@ -3,7 +3,6 @@ using UnityEngine.UIElements;
 using UnityEditor.UIElements;
 using UnityEditor;
 using UnityEngine;
-using System.Linq;
 using System;
 #endregion
 
@@ -18,8 +17,6 @@ namespace Nexerate.Nodes.Editor
         internal static NodeTreeView view;
         internal static Action<bool> RefreshEditor;
 
-        static NodeAssetEditor FirstEditor;
-
         #region Theme Colors
         static bool DarkTheme => EditorGUIUtility.isProSkin;
         static Color DarkGray => DarkTheme ? new(36 / 255f, 36 / 255f, 36 / 255f) : new(161 / 255f, 161 / 255f, 161 / 255f);
@@ -29,28 +26,10 @@ namespace Nexerate.Nodes.Editor
 
         void OnEnable()
         {
-            /*Selection.selectionChanged += () =>
-            {
-                //This needs to be subscribed to from somewhere else
-                //Will check if selection contains an asset, and if it does, show its hierarchy
-                //If not, disable hierarchy
-            };*/
-
             RefreshEditor -= Refresh;
             RefreshEditor += Refresh;
 
             asset = (NodeAsset)target;
-
-            /*if (FirstEditor == this)
-            {
-                if (EditorWindow.HasOpenInstances<NodeHierarchyWindow>())
-                {
-                    NodeHierarchyWindow window = EditorWindow.GetWindow<NodeHierarchyWindow>();
-                    window.Initialize(target as NodeAsset);
-                }
-            }*/
-
-            //if (FirstEditor == null) FirstEditor = this;
         }
 
         public override VisualElement CreateInspectorGUI()
@@ -63,18 +42,6 @@ namespace Nexerate.Nodes.Editor
         private void OnDisable()
         {
             RefreshEditor -= Refresh;
-
-            //This fixes the bug where context menus created temporary editors that broke the flow
-            /*if (FirstEditor == this)
-            {
-                FirstEditor = null;
-
-                if (EditorWindow.HasOpenInstances<NodeHierarchyWindow>())
-                {
-                    NodeHierarchyWindow window = EditorWindow.GetWindow<NodeHierarchyWindow>();
-                    window.NodeAsset = null;
-                }
-            }*/
         }
 
         #region Draw Node Header
@@ -128,49 +95,6 @@ namespace Nexerate.Nodes.Editor
             field.BindProperty(property);
 
             root.Add(field);
-        }
-    }
-
-    [InitializeOnLoad]
-    internal class NodeHierarchyManager
-    {
-        static NodeHierarchyManager()
-        {
-            Selection.selectionChanged -= OnSelection;
-            Selection.selectionChanged += OnSelection;
-        }
-
-        static void OnSelection()
-        {
-            var asset = Selection.activeObject;
-            var selection = Selection.GetFiltered<NodeAsset>(SelectionMode.Assets);
-            if (!selection.Contains(asset))
-            {
-                Debug.Log("Selection does not contain asset");
-                return;
-            }
-
-            if (asset != null)
-            {
-                if (typeof(NodeAsset).IsAssignableFrom(asset.GetType()))
-                {
-                    Debug.Log("Asset selected");
-                    if (EditorWindow.HasOpenInstances<NodeHierarchyWindow>())
-                    {
-                        NodeHierarchyWindow window = EditorWindow.GetWindow<NodeHierarchyWindow>();
-                        window.Initialize(asset as NodeAsset);
-                    }
-                }
-            }
-            else
-            {
-                Debug.Log("Asset not selected");
-                if (EditorWindow.HasOpenInstances<NodeHierarchyWindow>())
-                {
-                    NodeHierarchyWindow window = EditorWindow.GetWindow<NodeHierarchyWindow>();
-                    window.NodeAsset = null;
-                }
-            }
         }
     }
 }
