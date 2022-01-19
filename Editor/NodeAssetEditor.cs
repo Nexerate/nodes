@@ -33,10 +33,13 @@ namespace Nexerate.Nodes.Editor
 
             asset = (NodeAsset)target;
 
-            if (EditorWindow.HasOpenInstances<NodeHierarchyWindow>())
+            if (FirstEditor == this)
             {
-                NodeHierarchyWindow window = EditorWindow.GetWindow<NodeHierarchyWindow>();
-                window.Initialize(target as NodeAsset);
+                if (EditorWindow.HasOpenInstances<NodeHierarchyWindow>())
+                {
+                    NodeHierarchyWindow window = EditorWindow.GetWindow<NodeHierarchyWindow>();
+                    window.Initialize(target as NodeAsset);
+                }
             }
 
             if (FirstEditor == null) FirstEditor = this;
@@ -49,7 +52,6 @@ namespace Nexerate.Nodes.Editor
             return root;
         }
 
-        [Obsolete("Fix bug here")]
         private void OnDisable()
         {
             RefreshEditor -= Refresh;
