@@ -89,7 +89,7 @@ namespace Nexerate.Nodes
         /// Does the node have a component of the specified type?
         /// </summary>
         /// <returns>True if the node has one or more components of the specified type.</returns>
-        public bool HasComponent(Type type) => components.Where(c => c.GetType().Equals(type)).Any(); 
+        public bool HasComponent(Type type) => components.Where(c => c != null && c.GetType().Equals(type)).Any(); 
         #endregion
 
         #region Add Component
