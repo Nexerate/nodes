@@ -52,10 +52,11 @@ namespace Nexerate.Nodes.Editor
         [Obsolete("Fix bug here")]
         private void OnDisable()
         {
+            RefreshEditor -= Refresh;
+
             //This fixes the bug where context menus created temporary editors that broke the flow
             if (FirstEditor == this)
             {
-                RefreshEditor -= Refresh;
                 FirstEditor = null;
 
                 if (EditorWindow.HasOpenInstances<NodeHierarchyWindow>())
