@@ -33,7 +33,7 @@ namespace Nexerate.Nodes.Editor
             serializedObject = serializedProperty.serializedObject;
             target = (ComponentNode)serializedProperty.managedReferenceValue;
 
-            components = AllComponentsInAllAssemblies(typeof(NodeComponent), ValidateComponent);
+            components = FilterCache(typeof(NodeComponent), ValidateComponent);
 
             container = new();
 
@@ -185,18 +185,9 @@ namespace Nexerate.Nodes.Editor
             return foldout;
         }
 
-        List<Type> AllComponentsInAllAssemblies(Type type, Func<Type, bool> filter)
+        List<Type> FilterCache(Type type, Func<Type, bool> filter)
         {
-            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-
-            var types = new List<Type>();
-
-            for (int i = 0; i < assemblies.Length; i++)
-            {
-                //Add all types from this assembly that derive from T (But not T)
-                types.AddRange(assemblies[i].GetTypes().Where(t => t.IsSubclassOf(type) && filter.Invoke(t)));
-            }
-            return types;
+            return NodeComponentCache.Cache.Where(t => t.IsSubclassOf(type) && filter.Invoke(t)).ToList();
         }
 
         List<Type> components = new();
@@ -267,5 +258,29 @@ namespace Nexerate.Nodes.Editor
             DrawComponents();
         } 
         #endregion
+    }
+
+    [InitializeOnLoad]
+    internal class NodeComponentCache
+    {
+        public static List<Type> Cache { get; set; }
+        static NodeComponentCache()
+        {
+            Cache = AllComponentsInAllAssemblies();
+        }
+
+        static List<Type> AllComponentsInAllAssemblies()
+        {
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+
+            var types = new List<Type>();
+
+            for (int i = 0; i < assemblies.Length; i++)
+            {
+                //Add all types from this assembly that derive from T (But not T)
+                types.AddRange(assemblies[i].GetTypes().Where(t => t.IsSubclassOf(typeof(NodeComponent))));
+            }
+            return types;
+        }
     }
 }
