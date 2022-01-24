@@ -89,7 +89,7 @@ namespace Nexerate.Nodes
         public string Name { get => name; set => name = value.Trim(); }
         #endregion
 
-
+        #region Parent
         bool ValidParenting(Node node, Node newParent)
         {
             //If the parent of the node is locked, there is no point in validating the parents
@@ -134,7 +134,6 @@ namespace Nexerate.Nodes
             #endregion
         }
 
-        #region Parent
         [SerializeReference, HideInInspector] protected Node parent;
         
         /// <summary>
@@ -189,12 +188,13 @@ namespace Nexerate.Nodes
                 if (parent == null) return false;
 
                 //Parent has locked its children.
-                if (parent.hierarchyLockState == HierarchyLockState.ChildrenLocked) return true;
+                if (parent.ChildrenLocked) return true;
 
                 //Check if any ancestor has locked the hierarchy.
                 return IsInLockedHierarchy;
             }
         }
+
         public bool IsInLockedHierarchy => GetAncestors().Where(a => a.HierarchyLocked).Any();
 
         #region Lock/Unlock Parent

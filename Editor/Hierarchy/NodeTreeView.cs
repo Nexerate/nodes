@@ -239,6 +239,11 @@ namespace Nexerate.Nodes.Editor
             return index;
         }
 
+        protected override void ContextClicked()
+        {
+            ShowNodeMenu();
+        }
+
         protected override bool CanStartDrag(CanStartDragArgs args)
         {
             Node drag = asset.Find(args.draggedItem.id);
@@ -361,13 +366,18 @@ namespace Nexerate.Nodes.Editor
             Reload();
         }
 
-        protected override void ContextClickedItem(int id)
+        void ShowNodeMenu(Node target = null)
         {
-            Node target = root.Find(id);
-
+            bool nodeSelected = true;
+            if (target == null)
+            {
+                target = root;
+                nodeSelected = false;
+            }
+            int id = target.ID;
             GenericMenu menu = new();
 
-            if (!target.ChildrenLocked && !target.HierarchyLocked && !target.IsInLockedHierarchy) 
+            if (!target.ChildrenLocked && !target.HierarchyLocked && !target.IsInLockedHierarchy)
             {
                 #region Add Nodes
                 var assemblies = AppDomain.CurrentDomain.GetAssemblies();
@@ -408,34 +418,43 @@ namespace Nexerate.Nodes.Editor
                 if (types != null && types.Count > 0)
                 {
                     menu.AddSeparator("");
-                } 
+                }
                 #endregion
             }
 
-            #region Rename
-            menu.AddItem(new("Rename"), false, () =>
+            //Only show this part of the menu if a node is actually selected
+            if (nodeSelected)
             {
-                BeginRename(FindItem(id, rootItem));
-            });
-            #endregion
+                #region Rename
+                menu.AddItem(new("Rename"), false, () =>
+                {
+                    BeginRename(FindItem(id, rootItem));
+                });
+                #endregion
 
-            bool allowedToModifyParent = target != root && !target.ParentLocked && !target.Parent.ChildrenLocked && !target.Parent.HierarchyLocked;
+                bool canModifyParent = target != root && !target.ParentLocked;
 
-            #region Duplicate
-            if (target != root && allowedToModifyParent)
-            {
-                menu.AddItem(new("Duplicate"), false, Duplicate);
+                #region Duplicate
+                if (target != root && canModifyParent)
+                {
+                    menu.AddItem(new("Duplicate"), false, Duplicate);
+                }
+                #endregion
+
+                #region Delete
+                if (target != root && canModifyParent)
+                {
+                    menu.AddItem(new("Delete"), false, Delete);
+                }
+                #endregion
             }
-            #endregion
-
-            #region Delete
-            if (target != root && allowedToModifyParent)
-            {
-                menu.AddItem(new("Delete"), false, Delete);
-            }
-            #endregion
 
             menu.ShowAsContext();
+        }
+
+        protected override void ContextClickedItem(int id)
+        {
+            ShowNodeMenu(root.Find(id));
         }
     }
 }
