@@ -415,7 +415,7 @@ namespace Nexerate.Nodes.Editor
                 #endregion
 
                 #region Add Separator
-                if (types != null && types.Count > 0)
+                if (nodeSelected && types != null && types.Count > 0)
                 {
                     menu.AddSeparator("");
                 }
