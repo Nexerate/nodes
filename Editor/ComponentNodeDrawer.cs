@@ -37,7 +37,7 @@ namespace Nexerate.Nodes.Editor
 
             container = new();
 
-            DrawComponents();
+            DrawComponents(false);
 
             return container;
         }
@@ -62,9 +62,12 @@ namespace Nexerate.Nodes.Editor
             else return false;
         }
 
-        void DrawComponents()
+        void DrawComponents(bool update)
         {
-            serializedObject.Update();
+            if (update)
+            {
+                serializedObject.Update();
+            }
             container.Clear();
 
             var components = property.FindPropertyRelative("components");
@@ -227,15 +230,13 @@ namespace Nexerate.Nodes.Editor
             if (component.GetCustomAttribute<DisallowMultipleComponent>() != null)
                 components.Remove(component);
 
-            serializedObject.Update();
-
             Undo.RegisterCompleteObjectUndo(serializedObject.targetObject, "Add Component");
             target.AddComponent(component);
             Undo.FlushUndoRecordObjects();
 
             serializedObject.ApplyModifiedProperties();
             EditorUtility.SetDirty(serializedObject.targetObject);
-            DrawComponents();
+            DrawComponents(true);
         }
         #endregion
 
@@ -245,8 +246,6 @@ namespace Nexerate.Nodes.Editor
             if (!components.Contains(target.GetComponent(index).GetType()))
                 components.Add(target.GetComponent(index).GetType());
 
-            serializedObject.Update();
-
             Undo.RegisterCompleteObjectUndo(serializedObject.targetObject, "Remove Component");
             target.RemoveComponentAt(index);
             Undo.FlushUndoRecordObjects();
@@ -255,7 +254,7 @@ namespace Nexerate.Nodes.Editor
 
             EditorUtility.SetDirty(serializedObject.targetObject);
 
-            DrawComponents();
+            DrawComponents(true);
         } 
         #endregion
     }
