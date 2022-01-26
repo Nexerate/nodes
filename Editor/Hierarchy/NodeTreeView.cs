@@ -368,6 +368,12 @@ namespace Nexerate.Nodes.Editor
 
         void ShowNodeMenu(Node target = null)
         {
+            //Menu has already been opened from somewhere else
+            if (Event.current.commandName == "NodeMenu") return;
+
+            //Tell the current event that we are opening the Node Menu
+            Event.current.commandName = "NodeMenu";
+
             bool nodeSelected = true;
             if (target == null)
             {
@@ -380,16 +386,6 @@ namespace Nexerate.Nodes.Editor
             if (!target.ChildrenLocked && !target.HierarchyLocked && !target.IsInLockedHierarchy)
             {
                 #region Add Nodes
-                /*var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-
-                var types = new List<Type>();
-
-                for (int i = 0; i < assemblies.Length; i++)
-                {
-                    //Add all types from this assembly that derive from nodeType
-                    types.AddRange(assemblies[i].GetTypes().Where(t => nodeType.IsAssignableFrom(t)));
-                }*/
-
                 var types = Cache.NodeCache.Where(t => nodeType.IsAssignableFrom(t));
 
                 foreach (var type in types)
