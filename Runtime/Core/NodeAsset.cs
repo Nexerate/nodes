@@ -13,7 +13,7 @@ namespace Nexerate.Nodes
     /// </summary>
     public abstract class NodeAsset<BaseNodeType> : NodeAsset where BaseNodeType : Node, new()
     {
-        [SerializeReference] protected BaseNodeType root;
+        [SerializeReference, HideInInspector] protected BaseNodeType root;
         public sealed override Node Root => root;
 
         #region Constructor
@@ -36,7 +36,7 @@ namespace Nexerate.Nodes
     public abstract class NodeAsset : ScriptableObject
     {
         #region Nodes
-        [SerializeReference] List<Node> nodes = new();
+        [SerializeReference, NonReorderable] List<Node> nodes = new();
         /// <summary>
         /// Cached list of nodes in the <see cref="NodeAsset"/>. Faster to search this list than traverse the hierarchy yourself.
         /// List is updated when the <see cref="Node"/> hierarchy changes.

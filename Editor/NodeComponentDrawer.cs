@@ -66,7 +66,6 @@ namespace Nexerate.Nodes.Editor
                 var serializeReference = field.GetCustomAttribute<SerializeReference>();
                 if (serialize != null || serializeReference != null || field.IsPublic)
                 {
-                    //var field = RelativeField(property, field.name);
                     container.Add(RelativeField(property, field.Name));
                 }
             }

@@ -248,7 +248,7 @@ namespace Nexerate.Nodes
         public Node this[int index] => children[index];
 
         /// <summary>
-        /// Get child in node hierarchy using an array of indices.
+        /// Get child in <see cref="Node"/> hierarchy using an array of indices.
         /// </summary>
         public Node GetChild(int[] indices)
         {
