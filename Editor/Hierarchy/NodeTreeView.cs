@@ -380,7 +380,7 @@ namespace Nexerate.Nodes.Editor
             if (!target.ChildrenLocked && !target.HierarchyLocked && !target.IsInLockedHierarchy)
             {
                 #region Add Nodes
-                var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+                /*var assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
                 var types = new List<Type>();
 
@@ -388,7 +388,9 @@ namespace Nexerate.Nodes.Editor
                 {
                     //Add all types from this assembly that derive from nodeType
                     types.AddRange(assemblies[i].GetTypes().Where(t => nodeType.IsAssignableFrom(t)));
-                }
+                }*/
+
+                var types = Cache.NodeCache.Where(t => nodeType.IsAssignableFrom(t));
 
                 foreach (var type in types)
                 {
@@ -415,7 +417,7 @@ namespace Nexerate.Nodes.Editor
                 #endregion
 
                 #region Add Separator
-                if (nodeSelected && types != null && types.Count > 0)
+                if (nodeSelected && types != null && types.Count() > 0)
                 {
                     menu.AddSeparator("");
                 }
