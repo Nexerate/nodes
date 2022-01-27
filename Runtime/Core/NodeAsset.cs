@@ -52,7 +52,7 @@ namespace Nexerate.Nodes
 
         public void Enable()
         {
-            //RebuildHierarchy();
+            RebuildHierarchy();
 
             var root = Root;
             root.ChildrenChanged -= OnGraphChangedInternal;

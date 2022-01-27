@@ -136,8 +136,8 @@ namespace Nexerate.Nodes
             #endregion
         }
 
-        [HideInInspector, SerializeReference] protected Node parent;
-        [SerializeField] internal int parentID;//Will be used to reconstruct hierarchy. If parent ID is null, then node is root
+        [HideInInspector, NonSerialized] protected Node parent;
+        [SerializeField, HideInInspector] internal int parentID;//Used to reconstruct hierarchy. 
         
         /// <summary>
         /// Set the parent of a <see cref="Node"/> to <paramref name="newParent"/>.
@@ -253,7 +253,7 @@ namespace Nexerate.Nodes
         #endregion
 
         #region Children
-        [HideInInspector, SerializeReference] protected List<Node> children = new();
+        [HideInInspector, NonSerialized] protected List<Node> children = new();
         public int ChildCount => children.Count; 
 
         #region Get
