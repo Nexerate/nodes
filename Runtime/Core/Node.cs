@@ -296,7 +296,7 @@ namespace Nexerate.Nodes
             //SetParent will not call HierarchyChanged, so we need to do it ourselves after the reorder has happened
             bool reorder = child.parent == this;
 
-            Debug.Log(child.SetParent(this));
+            child.SetParent(this);
 
             //If parenting was somehow invalid AND the old parent is not equal to the new parent, we might have some problems
             //Child will not be removed from the old parent, but it will be added to this parent
