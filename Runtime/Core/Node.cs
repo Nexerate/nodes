@@ -54,45 +54,11 @@ namespace Nexerate.Nodes
         }
         #endregion
 
-        /*
-        Less to serialize in total
-        Nodes should be intact
-
-        What if nodes don't do any serializing themselves?
-        Asset keeps track of nodes and builds the hierarchy when it is needed
-        Linear serialization of node list
-        */
-
         #region Duplicate
         //When parent is duplicated, all children 
         [Obsolete("See if there is any problem here that is causing the weird behavior (SerializeReference maybe?)")]
         public Node Duplicate()
         {
-            //Ok, so might have been a little lazy with this duplication but it seems to now cause errors
-            //Not sure what the problem is, but it only happens to duplicated nodes
-            //Are parents not properly transfered over?
-            //Is it the children?
-            //Only the first child?
-            //Who knows
-
-            /*
-            What we want to happen when we duplicate a Node:
-            
-            ////////////////////////
-            ///Problem with shallow copies is that copied objects end up referencing the same opjects
-            ///So if you have instance A that references B, then duplicate A, the duplicate will still reference B
-            ///////////////////////
-
-            1. A copy of each node is made (memberwise clone?)
-            2. Each copy is parented to the copy equivalent to its old parent
-               This can probably be done by remembering the Id of the old parent, and look
-               through some list of node copies and set parent equal to that node
-               Would be nice to skip validation here
-               Therefore we will not use SetParent()
-               Instead, we will clear parents and children of the copied nodes and repopulate them
-            3. 
-            */
-
             string json = JsonUtility.ToJson(this);
 
             Node duplicate = (Node)JsonUtility.FromJson(json, GetType());
