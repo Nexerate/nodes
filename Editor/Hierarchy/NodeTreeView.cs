@@ -214,6 +214,8 @@ namespace Nexerate.Nodes.Editor
             }
         }
 
+        //If you drag outside the hierarchy, weird things happen..
+
         int GetAdjustedInsertIndex(Node parent, Node child, int index)
         {
             //Need to account for parent index when moving outside of parent. Find ancestor below the parent
@@ -228,7 +230,8 @@ namespace Nexerate.Nodes.Editor
                 uppermostParent = uppermostParent.Parent;
                 security++;
             }
-            if (security >= 50) Debug.Log("Infinite loop!");
+
+            if (security >= 50) Debug.LogError("Infinite loop!");
 
             if (uppermostParent.Parent != parent) return index;
 
@@ -319,7 +322,6 @@ namespace Nexerate.Nodes.Editor
 
             for (int i = 0; i < selection.Count; i++)
             {
-                //Debug.Log(selection[i]);
                 nodes.Add(root.Find(selection[i]));
             }
             for (int i = nodes.Count - 1; i >= 0; i--)

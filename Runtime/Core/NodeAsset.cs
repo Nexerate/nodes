@@ -52,6 +52,8 @@ namespace Nexerate.Nodes
 
         public void Enable()
         {
+            RebuildHierarchy();
+
             var root = Root;
             root.ChildrenChanged -= OnGraphChangedInternal;
             root.ChildrenChanged += OnGraphChangedInternal;
@@ -59,6 +61,24 @@ namespace Nexerate.Nodes
             ReCompileNodeList();
 
             Initialize();
+        }
+
+        /// <summary>
+        /// Rebuild the unserialized <see cref="Node"/> hierarchy from the serialized <see cref="nodes"/> list.
+        /// <br></br>
+        /// <br></br>
+        /// Serializing parents and children on all nodes caused an unacceptable amount of lag 
+        /// that made Nexerate Nodes unusable with 10+ nodes. <br> </br>Serializing the nodes in a linear array became the solution.
+        /// Now it runs smooth with hundreds of nodes.
+        /// </summary>
+        internal void RebuildHierarchy()
+        {
+            Debug.Log("BuildHierarhy");
+            int count = nodes.Count;
+            for (int i = 0; i < count; i++)
+            {
+                nodes[i].SetParent(nodes.Where(node => node.ID == nodes[i].parentID).FirstOrDefault());
+            }
         }
 
         /// <summary>

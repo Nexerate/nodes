@@ -54,9 +54,45 @@ namespace Nexerate.Nodes
         }
         #endregion
 
+        /*
+        Less to serialize in total
+        Nodes should be intact
+
+        What if nodes don't do any serializing themselves?
+        Asset keeps track of nodes and builds the hierarchy when it is needed
+        Linear serialization of node list
+        */
+
         #region Duplicate
+        //When parent is duplicated, all children 
+        [Obsolete("See if there is any problem here that is causing the weird behavior (SerializeReference maybe?)")]
         public Node Duplicate()
         {
+            //Ok, so might have been a little lazy with this duplication but it seems to now cause errors
+            //Not sure what the problem is, but it only happens to duplicated nodes
+            //Are parents not properly transfered over?
+            //Is it the children?
+            //Only the first child?
+            //Who knows
+
+            /*
+            What we want to happen when we duplicate a Node:
+            
+            ////////////////////////
+            ///Problem with shallow copies is that copied objects end up referencing the same opjects
+            ///So if you have instance A that references B, then duplicate A, the duplicate will still reference B
+            ///////////////////////
+
+            1. A copy of each node is made (memberwise clone?)
+            2. Each copy is parented to the copy equivalent to its old parent
+               This can probably be done by remembering the Id of the old parent, and look
+               through some list of node copies and set parent equal to that node
+               Would be nice to skip validation here
+               Therefore we will not use SetParent()
+               Instead, we will clear parents and children of the copied nodes and repopulate them
+            3. 
+            */
+
             string json = JsonUtility.ToJson(this);
 
             Node duplicate = (Node)JsonUtility.FromJson(json, GetType());
@@ -134,7 +170,8 @@ namespace Nexerate.Nodes
             #endregion
         }
 
-        [SerializeReference, HideInInspector] protected Node parent;
+        [HideInInspector, NonSerialized] protected Node parent;
+        [SerializeField, HideInInspector] internal int parentID;//Will be used to reconstruct hierarchy. If parent ID is null, then node is root
         
         /// <summary>
         /// Set the parent of a <see cref="Node"/> to <paramref name="newParent"/>.
@@ -143,20 +180,34 @@ namespace Nexerate.Nodes
         /// <returns>True if <paramref name="newParent"/> passed the validation checks and the parenting was successful.</returns>
         public bool SetParent(Node newParent)
         {
-            if (ValidParenting(this, newParent))
+            return SetParent(newParent, true, true);
+        }
+
+        internal bool SetParent(Node newParent, bool validate, bool notify)
+        {
+            bool valid = !validate || ValidParenting(this, newParent);
+
+            if (valid)
             {
                 if (parent != null)
                 {
                     parent.children.Remove(this);
-                    parent.OnChildrenChangedInternal();
+                    if (notify)
+                    {
+                        parent.OnChildrenChangedInternal();
+                    }
                 }
 
                 parent = newParent;
 
                 if (parent != null)
                 {
+                    parentID = parent.ID;
                     parent.children.Add(this);
-                    parent.OnChildrenChangedInternal();
+                    if (notify)
+                    {
+                        parent.OnChildrenChangedInternal();
+                    }
                 }
             }
 
@@ -236,7 +287,7 @@ namespace Nexerate.Nodes
         #endregion
 
         #region Children
-        [SerializeReference, HideInInspector] protected List<Node> children = new();
+        [HideInInspector, NonSerialized] protected List<Node> children = new();
         public int ChildCount => children.Count; 
 
         #region Get
@@ -279,7 +330,13 @@ namespace Nexerate.Nodes
             //SetParent will not call HierarchyChanged, so we need to do it ourselves after the reorder has happened
             bool reorder = child.parent == this;
 
-            child.SetParent(this);
+            Debug.Log(child.SetParent(this));
+
+            //If parenting was somehow invalid AND the old parent is not equal to the new parent, we might have some problems
+            //Child will not be removed from the old parent, but it will be added to this parent
+            //We need to make sure the parent actually changed, or perhaps even force a change
+            //I alidation was not passed, then two nodes will share a child
+            //This is a bad thing
 
             //If parent was successfully set, insert the child at the right index
             if (child.parent == this)
