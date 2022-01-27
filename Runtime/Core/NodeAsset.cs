@@ -76,7 +76,7 @@ namespace Nexerate.Nodes
             int count = nodes.Count;
             for (int i = 0; i < count; i++)
             {
-                nodes[i].SetParent(nodes.Where(node => node.ID == nodes[i].parentID).FirstOrDefault());
+                nodes[i].SetParent(nodes.Where(node => node.ID == nodes[i].parentID).FirstOrDefault(), false, false);
             }
         }
 
