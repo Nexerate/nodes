@@ -36,6 +36,7 @@ namespace Nexerate.Nodes.Editor
             Undo.undoRedoPerformed -= HandleUndo;
             Undo.undoRedoPerformed += HandleUndo;
 
+            //Make sure the hierarchy is built before we try and show it
             asset.RebuildHierarchy();
             Reload();
         }
