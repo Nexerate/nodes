@@ -15,7 +15,7 @@ namespace Nexerate.Nodes.Editor
 
         static void OnSelection()
         {
-            var asset = Selection.activeObject;
+            var asset = Selection.activeObject as NodeAsset;
 
             if (asset != null)
             {
