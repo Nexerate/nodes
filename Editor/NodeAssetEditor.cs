@@ -26,8 +26,6 @@ namespace Nexerate.Nodes.Editor
 
         void OnEnable()
         {
-            Debug.Log("Enable");
-
             RefreshEditor -= Refresh;
             RefreshEditor += Refresh;
 
