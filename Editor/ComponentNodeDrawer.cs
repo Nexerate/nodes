@@ -14,6 +14,7 @@ namespace Nexerate.Nodes.Editor
     [CustomPropertyDrawer(typeof(ComponentNode), true)]
     internal class ComponentNodeDrawer : PropertyDrawer
     {
+        VisualElement root;
         VisualElement container;
         ComponentNode target;
 
@@ -35,11 +36,13 @@ namespace Nexerate.Nodes.Editor
 
             components = FilterCache(typeof(NodeComponent), ValidateComponent);
 
+            root = new();
             container = new();
+            root.Add(container);
 
-            DrawComponents(false);
+            Draw();
 
-            return container;
+            return root;
         }
 
         bool ValidateComponent(Type t)
@@ -62,14 +65,21 @@ namespace Nexerate.Nodes.Editor
             else return false;
         }
 
+        void Draw()
+        {
+            DrawComponents(false);
+
+            root.Add(AddComponentButton());
+        }
+
         void DrawComponents(bool update)
         {
             if (update)
             {
                 serializedObject.Update();
             }
-            container.Clear();
 
+            container.Clear();
             var components = property.FindPropertyRelative("components");
 
             for (int i = 0; i < components.arraySize; i++)
@@ -80,8 +90,8 @@ namespace Nexerate.Nodes.Editor
                 DrawComponent(componentContainer, components.GetArrayElementAtIndex(i), i);
                 container.Add(componentContainer);
             }
-            container.Add(AddComponentButton());
         }
+
 
         void DrawComponent(VisualElement container, SerializedProperty component, int index)
         {
@@ -221,6 +231,7 @@ namespace Nexerate.Nodes.Editor
                 var window = EditorWindow.focusedWindow;
                 window.ShowAsDropDown(GUIUtility.GUIToScreenRect(rect), new Vector2(rect.width, 180));
             };
+            button.Focus();
             return button;
         }
 

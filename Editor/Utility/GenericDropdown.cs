@@ -44,7 +44,7 @@ namespace Nexerate.Nodes.Editor
                     var attribute = types[i].GetCustomAttributes<AddNodeComponentMenuAttribute>().FirstOrDefault();
 
                     List<string> path = attribute == null ? new() : attribute.menuName.Split("/").ToList();
-                    path.Add(types[i].Name.Remove(formatOut).SpaceBeforeUppercase());
+                    if (attribute == null) path.Add(types[i].Name.Remove(formatOut).SpaceBeforeUppercase());
                     paths.Add(path);
                 }
             }

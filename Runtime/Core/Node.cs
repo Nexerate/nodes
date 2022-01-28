@@ -55,18 +55,35 @@ namespace Nexerate.Nodes
         #endregion
 
         #region Duplicate
-        //When parent is duplicated, all children 
-        [Obsolete("See if there is any problem here that is causing the weird behavior (SerializeReference maybe?)")]
         public Node Duplicate()
         {
-            string json = JsonUtility.ToJson(this);
+            NodeDuplicator duplicator = new(this, out Node duplicate);
+            return duplicate;
 
-            Node duplicate = (Node)JsonUtility.FromJson(json, GetType());
+            //string json = JsonUtility.ToJson(this);
+
+            //Duplication happens on the node asset
+            //Add all nodes in selected node hierarchy to a list of nodes scheduled for duplication
+            //Replace nodes in list with duplicates
+            //Reparent nodes in list
+            //Regenerate IDs
+            //Add node back into hierarchy
+            //Duplicate every single node in this hierarchy
+
+            //One very good idea:
+            //Create an instance of class NodeDuplicator
+            //Add nodes that should be duplicated to nodes list of node duplicator
+            //JSON serialize
+            //Json deserialize
+            //Reparent nodes 
+            //Good to go
+
+            /*Node duplicate = (Node)JsonUtility.FromJson(json, GetType());
 
             //Generate new IDs for the duplicated node and its children
             duplicate.RegenerateIDs();
 
-            return duplicate;
+            return duplicate;*/
         }
         #endregion
 
@@ -76,11 +93,12 @@ namespace Nexerate.Nodes
 
         int GenerateNewID() => id = Guid.NewGuid().ToString().GetHashCode();
 
-        void RegenerateIDs()
+        internal void RegenerateIDs()
         {
             GenerateNewID();
             TraverseHierarchy(this, node =>
             {
+                node.parentID = node.parent == null? 0: node.parent.id;
                 node.GenerateNewID();
             });
         }
@@ -296,16 +314,8 @@ namespace Nexerate.Nodes
             //SetParent will not call HierarchyChanged, so we need to do it ourselves after the reorder has happened
             bool reorder = child.parent == this;
 
-            child.SetParent(this);
-
-            //If parenting was somehow invalid AND the old parent is not equal to the new parent, we might have some problems
-            //Child will not be removed from the old parent, but it will be added to this parent
-            //We need to make sure the parent actually changed, or perhaps even force a change
-            //I alidation was not passed, then two nodes will share a child
-            //This is a bad thing
-
-            //If parent was successfully set, insert the child at the right index
-            if (child.parent == this)
+            //Execute logic if the parent was successfully set to this node
+            if (child.SetParent(this))
             {
                 children.Remove(child);
                 children.Insert(index, child);
@@ -436,5 +446,45 @@ namespace Nexerate.Nodes
             return path.ToArray();
         } 
         #endregion
+    }
+
+    [Serializable]
+    internal class NodeDuplicator
+    {
+        [SerializeReference] List<Node> nodes = new();
+        internal NodeDuplicator(Node node, out Node duplicate)
+        {
+            CompileNodeListFromHierarchy(node);
+
+            string json = JsonUtility.ToJson(this);
+            var instance = JsonUtility.FromJson<NodeDuplicator>(json);
+
+            //Reparent
+            int count = instance.nodes.Count;
+            for (int i = 0; i < count; i++)
+            {
+                instance.nodes[i].SetParent(instance.nodes.Where(node => node.ID == instance.nodes[i].parentID).FirstOrDefault(), false, false);
+            }
+
+            //Regenerate IDs
+            instance.nodes[0].RegenerateIDs();
+
+            duplicate = instance.nodes[0];
+        }
+
+        void CompileNodeListFromHierarchy(Node parent)
+        {
+            //Root
+            if (nodes.Count == 0)
+            {
+                nodes.Add(parent);
+            }
+
+            for (int i = 0; i < parent.ChildCount; i++)
+            {
+                nodes.Add(parent[i]);
+                CompileNodeListFromHierarchy(parent[i]);
+            }
+        }
     }
 }

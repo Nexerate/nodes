@@ -71,7 +71,7 @@ namespace Nexerate.Nodes
         /// that made Nexerate Nodes unusable with 10+ nodes. <br> </br>Serializing the nodes in a linear array became the solution.
         /// Now it runs smooth with hundreds of nodes.
         /// </summary>
-        internal void RebuildHierarchy()
+        public void RebuildHierarchy()
         {
             int count = nodes.Count;
             for (int i = 0; i < count; i++)

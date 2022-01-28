@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine.InputSystem;
+using UnityEditor.Callbacks;
 using System.Reflection;
 using UnityEngine;
 using UnityEditor;
@@ -19,9 +20,8 @@ namespace Nexerate.Nodes.Editor
 
         public NodeTreeView(NodeAsset nodeAsset, TreeViewState state) : base(state) 
         {
-            asset = nodeAsset;
-
             #region Get Base Node Type From Generic Argument Of Node Asset Base Class
+            asset = nodeAsset;
             Type type = asset.GetType().BaseType;
 
             while (type.BaseType != typeof(NodeAsset) && type.BaseType != null)
@@ -35,6 +35,8 @@ namespace Nexerate.Nodes.Editor
             InitializeRootAndAsset(asset);
             Undo.undoRedoPerformed -= HandleUndo;
             Undo.undoRedoPerformed += HandleUndo;
+
+            asset.RebuildHierarchy();
             Reload();
         }
 
@@ -91,6 +93,10 @@ namespace Nexerate.Nodes.Editor
 
         void BuildRecursive(TreeViewItem item, Node node)
         {
+            //Problem here is that when the hierarchy is deleted, this class thinks it it empty
+            //In reality, the hierarchy is stored in the Asset's Nodes list
+            //Somehow we need to ensure that the hierarchy is always caought up with the nodes list and vice versa
+
             TreeViewItem child = new(node.ID) { displayName = node.Name };
 
             //You cannot edit the children of this node. Either because it is locked, or because it is in a locked hierarchy
@@ -267,12 +273,11 @@ namespace Nexerate.Nodes.Editor
                 var node = asset.Find(args.itemID);
                 node.Name = name;
 
-                ReImport();
-
                 Undo.FlushUndoRecordObjects();
                 EditorUtility.SetDirty(asset);
-
                 RefreshEditor();
+
+                ReImport();
                 Reload();
             }
         }
@@ -343,6 +348,7 @@ namespace Nexerate.Nodes.Editor
             }
             Undo.FlushUndoRecordObjects();
             EditorUtility.SetDirty(asset);
+            RefreshEditor();
 
             ReImport();
             Reload();
@@ -405,6 +411,7 @@ namespace Nexerate.Nodes.Editor
 
                             Undo.FlushUndoRecordObjects();
                             EditorUtility.SetDirty(asset);
+                            RefreshEditor();
 
                             SetExpanded(id, true);
                             ReImport();
