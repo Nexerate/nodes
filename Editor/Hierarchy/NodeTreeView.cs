@@ -448,21 +448,18 @@ namespace Nexerate.Nodes.Editor
 
             menu.AddSeparator("");
 
-            if (nodeSelected)
+            if (nodeSelected && target != root && !target.ParentLocked)
             {
-                if (target != root && !target.ParentLocked)
+                menu.AddItem(new("Cut"), false, () =>
                 {
-                    menu.AddItem(new("Cut"), false, () =>
-                    {
-                        NodeEditorUtility.Copy(GetSelectedNodes());
-                        Delete();
-                    });
+                    NodeEditorUtility.Copy(GetSelectedNodes());
+                    Delete();
+                });
 
-                    menu.AddItem(new("Copy"), false, () =>
-                    {
-                        NodeEditorUtility.Copy(GetSelectedNodes());
-                    });
-                }
+                menu.AddItem(new("Copy"), false, () =>
+                {
+                    NodeEditorUtility.Copy(GetSelectedNodes());
+                });
             }
             else
             {
