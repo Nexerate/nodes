@@ -13,7 +13,7 @@ namespace Nexerate.Nodes
     /// Derived classes must add the [<seealso cref="SerializableAttribute"/>] attribute.
     /// </summary>
     [Serializable]
-    [AddComponentMenu("Component Node")]
+    [AddNodeMenu("Component Node")]
     public class ComponentNode : Node
     {
         #region Components
