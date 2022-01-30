@@ -212,6 +212,10 @@ namespace Nexerate.Nodes
         /// Is the hierarchy of this <see cref="Node"/> locked?
         /// </summary>
         public bool HierarchyLocked => hierarchyLockState == HierarchyLockState.HierarchyLocked;
+        
+        /// <summary>
+        /// If the parent of the <see cref="Node"/> is in any way locked, this will return true. 
+        /// </summary>
         public bool ParentLocked
         {
             get

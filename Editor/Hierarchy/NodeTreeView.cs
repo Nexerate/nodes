@@ -316,19 +316,39 @@ namespace Nexerate.Nodes.Editor
             base.KeyEvent();
         }
 
-        void Duplicate()
+        //Nodes with their parent locked cannot be duplicated
+        //Nodes inside a locked hierarchy can also not be duplicated
+
+        List<Node> GetSelectionAsNodes()
         {
             var nodes = new List<Node>();
             var selection = GetSelection().ToList();
-            
-            //Root cannot be duplicated
-            //All rows will also have root as ancestor, so we must remove it for the validation to work
-            selection.Remove(root.ID);
 
             for (int i = 0; i < selection.Count; i++)
             {
                 nodes.Add(root.Find(selection[i]));
             }
+            return nodes;
+        }
+
+        void Duplicate()
+        {
+            var nodes = GetSelectionAsNodes().Where(node => node != root && !node.ParentLocked).ToList();
+            var selection = GetSelection().ToList();
+            
+            //Root cannot be duplicated
+            //All rows will also have root as ancestor, so we must remove it for the validation to work
+            //selection.Remove(root.ID);
+
+            /*for (int i = 0; i < selection.Count; i++)
+            {
+                var node = root.Find(selection[i]);
+                if (!node.ParentLocked)
+                {
+                    nodes.Add(root.Find(selection[i]));
+                }
+            }*/
+
             for (int i = nodes.Count - 1; i >= 0; i--)
             {
                 //Remove nodes with ancestors in the selection
@@ -341,6 +361,7 @@ namespace Nexerate.Nodes.Editor
             }
 
             Undo.RegisterCompleteObjectUndo(asset, "Duplicate Node");
+
             for (int i = 0; i < nodes.Count; i++)
             {
                 var duplicate = nodes[i].Duplicate();
@@ -358,11 +379,10 @@ namespace Nexerate.Nodes.Editor
         {
             Undo.RegisterCompleteObjectUndo(asset, "Delete Node");
 
-            var selection = GetSelection();
+            var selection = GetSelectionAsNodes();
 
-            for (int i = 0; i < selection.Count; i++)
+            foreach (var node in selection)
             {
-                var node = asset.Find(selection[i]);
                 node?.SetParent(null);
             }
 
@@ -454,6 +474,48 @@ namespace Nexerate.Nodes.Editor
                     menu.AddItem(new("Delete"), false, Delete);
                 }
                 #endregion
+
+                menu.AddSeparator("");
+
+                
+                if (target != root && !target.ParentLocked)
+                {
+                    menu.AddItem(new("Cut"), false, () =>
+                    {
+                        NodeEditorUtility.Copy(GetSelectionAsNodes());
+                        Delete();
+                    });
+
+                    menu.AddItem(new("Copy"), false, () =>
+                    {
+                        NodeEditorUtility.Copy(GetSelectionAsNodes());
+                    });
+                }
+                else
+                {
+                    menu.AddDisabledItem(new("Cut"));
+                    menu.AddDisabledItem(new("Copy"));
+                }
+
+                if (!target.ChildrenLocked && !target.HierarchyLocked && NodeEditorUtility.HasNodesInClipboard)
+                {
+                    menu.AddItem(new("Paste"), false, () =>
+                    {
+                        Undo.RegisterCompleteObjectUndo(asset, "Paste Node");
+                        NodeEditorUtility.Paste(target);
+                        Undo.FlushUndoRecordObjects();
+                        EditorUtility.SetDirty(asset);
+                        RefreshEditor();
+
+                        SetExpanded(target.ID, true);
+                        ReImport();
+                        Reload();
+                    });
+                }
+                else
+                {
+                    menu.AddDisabledItem(new("Paste"));
+                }
             }
 
             menu.ShowAsContext();
