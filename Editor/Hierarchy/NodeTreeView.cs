@@ -151,55 +151,53 @@ namespace Nexerate.Nodes.Editor
             if (args.performDrop)
             {
                 CleanUpDroppedItems(items, args);
-                Undo.RegisterCompleteObjectUndo(asset, "Reorder Nodes");
 
-                //Create an array of nodes from the item list
-                var nodes = new Node[items.Count];
-                for (int i = 0; i < items.Count; i++)
+                PerformUndoableAction(() =>
                 {
-                    nodes[i] = asset.Find(items[i].id);
-                }
-
-                if (args.dragAndDropPosition == DragAndDropPosition.OutsideItems)
-                {
-                    //Iterate over all of the items and set their parent to be the root
-                    foreach (var node in nodes)
+                    //Create an array of nodes from the item list
+                    var nodes = new Node[items.Count];
+                    for (int i = 0; i < items.Count; i++)
                     {
-                        node.SetParent(root);
+                        nodes[i] = asset.Find(items[i].id);
                     }
-                }
-                else
-                {
-                    //Because of a TreeView bug, we have to account for args.parentItem.id being the id of the root TreeViewItem
-                    //This happens when we try to drop nodes right below the root node.
-                    int insertIndex = parent.id == 0 ? 0 : args.insertAtIndex;
-                    Node targetParent = parent.id == 0 ? root: asset.Find(parent.id);
 
-                    //If node hierarchy is not recompiled, then asset.Find(id) might return null
-                    //This, in turn, would mean that all selected nodes will have their parent set to null
-                    //In other words, they will be deleted
-
-                    if (args.dragAndDropPosition == DragAndDropPosition.UponItem)
+                    if (args.dragAndDropPosition == DragAndDropPosition.OutsideItems)
                     {
+                        //Iterate over all of the items and set their parent to be the root
                         foreach (var node in nodes)
                         {
-                            node.SetParent(targetParent);
+                            node.SetParent(root);
                         }
                     }
                     else
                     {
-                        for (int i = nodes.Length - 1; i >= 0; i--)
-                        {
-                            insertIndex = GetAdjustedInsertIndex(targetParent, nodes[i], insertIndex);
-                            targetParent.InsertChild(insertIndex, nodes[i]);
-                        }
-                    }
-                    SetExpanded(parent.id, true);
-                }
+                        //Because of a TreeView bug, we have to account for args.parentItem.id being the id of the root TreeViewItem
+                        //This happens when we try to drop nodes right below the root node.
+                        int insertIndex = parent.id == 0 ? 0 : args.insertAtIndex;
+                        Node targetParent = parent.id == 0 ? root: asset.Find(parent.id);
 
-                Undo.FlushUndoRecordObjects();
-                EditorUtility.SetDirty(asset);
-                Reload();
+                        //If node hierarchy is not recompiled, then asset.Find(id) might return null
+                        //This, in turn, would mean that all selected nodes will have their parent set to null
+                        //In other words, they will be deleted
+
+                        if (args.dragAndDropPosition == DragAndDropPosition.UponItem)
+                        {
+                            foreach (var node in nodes)
+                            {
+                                node.SetParent(targetParent);
+                            }
+                        }
+                        else
+                        {
+                            for (int i = nodes.Length - 1; i >= 0; i--)
+                            {
+                                insertIndex = GetAdjustedInsertIndex(targetParent, nodes[i], insertIndex);
+                                targetParent.InsertChild(insertIndex, nodes[i]);
+                            }
+                        }
+                        SetExpanded(parent.id, true);
+                    }
+                }, "Reorder Node");
             }
             return DragAndDropVisualMode.Move;
         }
@@ -269,16 +267,11 @@ namespace Nexerate.Nodes.Editor
             string name = args.newName.Trim();
             if (args.acceptedRename && name != args.originalName && !string.IsNullOrEmpty(name))
             {
-                Undo.RegisterCompleteObjectUndo(asset, "Rename Node");
-                var node = asset.Find(args.itemID);
-                node.Name = name;
-
-                Undo.FlushUndoRecordObjects();
-                EditorUtility.SetDirty(asset);
+                PerformUndoableAction(() =>
+                {
+                    asset.Find(args.itemID).Rename(name);
+                }, "Rename Node");
                 RefreshEditor();
-
-                ReImport();
-                Reload();
             }
         }
 
@@ -319,7 +312,7 @@ namespace Nexerate.Nodes.Editor
         //Nodes with their parent locked cannot be duplicated
         //Nodes inside a locked hierarchy can also not be duplicated
 
-        List<Node> GetSelectionAsNodes()
+        List<Node> GetSelectedNodes()
         {
             var nodes = new List<Node>();
             var selection = GetSelection().ToList();
@@ -333,21 +326,8 @@ namespace Nexerate.Nodes.Editor
 
         void Duplicate()
         {
-            var nodes = GetSelectionAsNodes().Where(node => node != root && !node.ParentLocked).ToList();
+            var nodes = GetSelectedNodes().Where(node => node != root && !node.ParentLocked).ToList();
             var selection = GetSelection().ToList();
-            
-            //Root cannot be duplicated
-            //All rows will also have root as ancestor, so we must remove it for the validation to work
-            //selection.Remove(root.ID);
-
-            /*for (int i = 0; i < selection.Count; i++)
-            {
-                var node = root.Find(selection[i]);
-                if (!node.ParentLocked)
-                {
-                    nodes.Add(root.Find(selection[i]));
-                }
-            }*/
 
             for (int i = nodes.Count - 1; i >= 0; i--)
             {
@@ -360,38 +340,31 @@ namespace Nexerate.Nodes.Editor
                 }
             }
 
-            Undo.RegisterCompleteObjectUndo(asset, "Duplicate Node");
-
-            for (int i = 0; i < nodes.Count; i++)
+            PerformUndoableAction(() =>
             {
-                var duplicate = nodes[i].Duplicate();
-                duplicate.SetParent(nodes[i].Parent);
-            }
-            Undo.FlushUndoRecordObjects();
-            EditorUtility.SetDirty(asset);
-            RefreshEditor();
+                for (int i = 0; i < nodes.Count; i++)
+                {
+                    var duplicate = nodes[i].Duplicate();
+                    duplicate.SetParent(nodes[i].Parent);
+                }
+            }, "Duplicate Node");
 
-            ReImport();
-            Reload();
+            RefreshEditor();
         }
 
         void Delete()
         {
-            Undo.RegisterCompleteObjectUndo(asset, "Delete Node");
-
-            var selection = GetSelectionAsNodes();
-
-            foreach (var node in selection)
+            PerformUndoableAction(() =>
             {
-                node?.SetParent(null);
-            }
+                var selection = GetSelectedNodes();
 
-            Undo.FlushUndoRecordObjects();
-            EditorUtility.SetDirty(asset);
+                foreach (var node in selection)
+                {
+                    node?.SetParent(null);
+                }
+            }, "Delete Node");
 
-            ReImport();
             RefreshEditor(true);
-            Reload();
         }
 
         void ShowNodeMenu(Node target = null)
@@ -425,17 +398,14 @@ namespace Nexerate.Nodes.Editor
                         var menuName = attribute.MenuName;
                         menu.AddItem(new(menuName), false, () =>
                         {
-                            Undo.RegisterCompleteObjectUndo(asset, "Add Node");
-                            Node child = (Node)Activator.CreateInstance(type);
-                            child.SetParent(target);
+                            PerformUndoableAction(() =>
+                            {
+                                Node child = (Node)Activator.CreateInstance(type);
+                                child.SetParent(target);
+                            }, "Add Node");
 
-                            Undo.FlushUndoRecordObjects();
-                            EditorUtility.SetDirty(asset);
                             RefreshEditor();
-
                             SetExpanded(id, true);
-                            ReImport();
-                            Reload();
                         });
                     }
                 }
@@ -474,51 +444,61 @@ namespace Nexerate.Nodes.Editor
                     menu.AddItem(new("Delete"), false, Delete);
                 }
                 #endregion
+            }
 
-                menu.AddSeparator("");
+            menu.AddSeparator("");
 
-                
+            if (nodeSelected)
+            {
                 if (target != root && !target.ParentLocked)
                 {
                     menu.AddItem(new("Cut"), false, () =>
                     {
-                        NodeEditorUtility.Copy(GetSelectionAsNodes());
+                        NodeEditorUtility.Copy(GetSelectedNodes());
                         Delete();
                     });
 
                     menu.AddItem(new("Copy"), false, () =>
                     {
-                        NodeEditorUtility.Copy(GetSelectionAsNodes());
+                        NodeEditorUtility.Copy(GetSelectedNodes());
                     });
                 }
-                else
-                {
-                    menu.AddDisabledItem(new("Cut"));
-                    menu.AddDisabledItem(new("Copy"));
-                }
+            }
+            else
+            {
+                menu.AddDisabledItem(new("Cut"));
+                menu.AddDisabledItem(new("Copy"));
+            }
 
-                if (!target.ChildrenLocked && !target.HierarchyLocked && NodeEditorUtility.HasNodesInClipboard)
+            if (!target.ChildrenLocked && !target.HierarchyLocked && NodeEditorUtility.HasNodesInClipboard)
+            {
+                menu.AddItem(new("Paste"), false, () =>
                 {
-                    menu.AddItem(new("Paste"), false, () =>
+                    PerformUndoableAction(() =>
                     {
-                        Undo.RegisterCompleteObjectUndo(asset, "Paste Node");
                         NodeEditorUtility.Paste(target);
-                        Undo.FlushUndoRecordObjects();
-                        EditorUtility.SetDirty(asset);
-                        RefreshEditor();
-
-                        SetExpanded(target.ID, true);
-                        ReImport();
-                        Reload();
-                    });
-                }
-                else
-                {
-                    menu.AddDisabledItem(new("Paste"));
-                }
+                    }, "Paste Node");
+                    SetExpanded(target.ID, true);
+                    RefreshEditor();
+                });
+            }
+            else
+            {
+                menu.AddDisabledItem(new("Paste"));
             }
 
             menu.ShowAsContext();
+        }
+
+        void PerformUndoableAction(Action action, string undoMessage)
+        {
+            Undo.RegisterCompleteObjectUndo(asset, undoMessage);
+            action.Invoke();
+            Undo.FlushUndoRecordObjects();
+            EditorUtility.SetDirty(asset);
+
+            ReImport();
+            Reload();
         }
 
         protected override void ContextClickedItem(int id)
