@@ -11,29 +11,42 @@ namespace Nexerate.Nodes.Editor
 
         public static bool HasNodesInClipboard => Nodes != null && Nodes.Count > 0;
 
+        /// <summary>
+        /// Copies the nodes. Only nodes that can be copied will be copied. Nodes with locked parents or nodes in locked hierarchies
+        /// will not be copied.
+        /// </summary>
         public static void Copy(List<Node> nodes)
         {
-            Nodes = nodes.Where(node => !node.ParentLocked).ToList();
-            for (int i = nodes.Count - 1; i >= 0; i--)
+            Nodes = nodes.Where(node => !node.ParentLocked && !node.IsInLockedHierarchy).ToList();
+            for (int i = Nodes.Count - 1; i >= 0; i--)
             {
                 //Remove nodes with ancestors in the selection
                 //Only uppermost nodes should be duplicated
-                var ancestors = nodes[i].GetAncestors();
-                if (ancestors.Intersect(nodes).Any())
+                var ancestors = Nodes[i].GetAncestors();
+                if (ancestors.Intersect(Nodes).Any())
                 {
-                    nodes.RemoveAt(i);
+                    Nodes.RemoveAt(i);
                 }
+            }
+            for (int i = 0; i < Nodes.Count; i++)
+            {
+                //Duplicate the nodes to lose reference to the original nodes.
+                //This prevents a bug where changes to copied nodes done after the copy were being included in the paste.
+                Nodes[i] = Nodes[i].Duplicate();
             }
         }
 
         public static void Paste(Node parent)
         {
-            if (parent.ChildrenLocked || parent.HierarchyLocked || parent.IsInLockedHierarchy) return;
-
-            for (int i = 0; i < Nodes.Count; i++)
+            if (HasNodesInClipboard)
             {
-                var duplicate = Nodes[i].Duplicate();
-                duplicate.SetParent(parent);
+                if (parent.ChildrenLocked || parent.HierarchyLocked || parent.IsInLockedHierarchy) return;
+
+                for (int i = 0; i < Nodes.Count; i++)
+                {
+                    var duplicate = Nodes[i].Duplicate();
+                    duplicate.SetParent(parent);
+                }
             }
         }
     }

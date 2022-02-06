@@ -1,5 +1,6 @@
 ﻿#region Using
 using UnityEditor;
+using System;
 #endregion
 
 namespace Nexerate.Nodes.Editor
@@ -7,6 +8,7 @@ namespace Nexerate.Nodes.Editor
     [InitializeOnLoad]
     internal class NodeAssetSelectionManager
     {
+        public static event Action NodeAssetUnselected;
         static NodeAssetSelectionManager()
         {
             Selection.selectionChanged -= OnSelection;
@@ -24,17 +26,13 @@ namespace Nexerate.Nodes.Editor
                     if (EditorWindow.HasOpenInstances<NodeHierarchyWindow>())
                     {
                         NodeHierarchyWindow window = EditorWindow.GetWindow<NodeHierarchyWindow>();
-                        window.Initialize(asset as NodeAsset);
+                        window.Initialize(asset);
                     }
                 }
             }
             else
             {
-                if (EditorWindow.HasOpenInstances<NodeHierarchyWindow>())
-                {
-                    NodeHierarchyWindow window = EditorWindow.GetWindow<NodeHierarchyWindow>();
-                    window.NodeAsset = null;
-                }
+                NodeAssetUnselected?.Invoke();
             }
         }
     }

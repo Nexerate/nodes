@@ -227,9 +227,6 @@ namespace Nexerate.Nodes.Editor
                 GenericDropdown dropdown = new("Components", "Component", components) { clickedType = AddComponent };
                 Rect rect = button.worldBound;
                 dropdown.Show(rect);
-                rect.position = button.LocalToWorld(rect.position) / 2;
-                var window = EditorWindow.focusedWindow;
-                window.ShowAsDropDown(GUIUtility.GUIToScreenRect(rect), new Vector2(rect.width, 180));
             };
             button.Focus();
             return button;

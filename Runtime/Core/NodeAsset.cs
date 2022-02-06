@@ -147,8 +147,8 @@ namespace Nexerate.Nodes
         #endregion
 
         #region Selected ID
-        [SerializeField, HideInInspector] int selectedID;
-        public int SelectedID { get => selectedID; set => selectedID = value; } 
+        //[SerializeField, HideInInspector] int selectedID;
+        //public int SelectedID { get => selectedID; set => selectedID = value; } 
         #endregion
     }
 }

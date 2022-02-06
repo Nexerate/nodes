@@ -11,14 +11,26 @@ namespace Nexerate.Nodes.Editor
     {
         [SerializeField] TreeViewState treeViewState;
 
+        public TreeViewState TreeViewState => treeViewState;
+
         NodeTreeView treeView;
         NodeAsset nodeAsset;
+
+        GUIContent defaultTitle = new("Node Hierarchy");
 
         public NodeAsset NodeAsset { get => nodeAsset; set => nodeAsset = value; }
 
         private void OnEnable()
         {
             Initialize(nodeAsset);
+
+            NodeAssetSelectionManager.NodeAssetUnselected -= UnsetNodeAsset;
+            NodeAssetSelectionManager.NodeAssetUnselected += UnsetNodeAsset;
+        }
+
+        void UnsetNodeAsset()
+        {
+            nodeAsset = null;
         }
 
         public void Initialize(NodeAsset asset)
@@ -45,7 +57,10 @@ namespace Nexerate.Nodes.Editor
             }
             else
             {
-                titleContent = new("Node Hierarchy");
+                if(titleContent != defaultTitle)
+                {
+                    titleContent = defaultTitle;
+                }
             }
         }
 

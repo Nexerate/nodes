@@ -51,7 +51,6 @@ namespace Nexerate.Nodes.Editor
 
         protected override void SingleClickedItem(int id)
         {
-            asset.SelectedID = id;
             RefreshEditor();
         }
 
@@ -218,8 +217,6 @@ namespace Nexerate.Nodes.Editor
             }
         }
 
-        //If you drag outside the hierarchy, weird things happen..
-
         int GetAdjustedInsertIndex(Node parent, Node child, int index)
         {
             //Need to account for parent index when moving outside of parent. Find ancestor below the parent
@@ -283,7 +280,7 @@ namespace Nexerate.Nodes.Editor
                 if (!wasPressed)
                 {
                     wasPressed = true;
-                    Delete();
+                    DeleteSelectedNodes();
                 }
             }
             else if (Keyboard.current.ctrlKey.isPressed)
@@ -293,7 +290,26 @@ namespace Nexerate.Nodes.Editor
                     if (!wasPressed)
                     {
                         wasPressed = true;
-                        Duplicate();
+                        DuplicateSelectedNodes();
+                    }
+                }
+                else if (Keyboard.current.cKey.isPressed)
+                {
+                    if (!wasPressed)
+                    {
+                        Debug.Log("copy");
+                        wasPressed = true;
+                        Copy();
+                    }
+                }
+                else if (Keyboard.current.vKey.isPressed)
+                {
+                    if (!wasPressed)
+                    {
+                        Debug.Log("paste");
+                        wasPressed = true;
+                        var selectedNode = asset.Find(state.lastClickedID) ?? root;
+                        Paste(selectedNode);
                     }
                 }
                 else
@@ -309,9 +325,6 @@ namespace Nexerate.Nodes.Editor
             base.KeyEvent();
         }
 
-        //Nodes with their parent locked cannot be duplicated
-        //Nodes inside a locked hierarchy can also not be duplicated
-
         List<Node> GetSelectedNodes()
         {
             var nodes = new List<Node>();
@@ -324,7 +337,8 @@ namespace Nexerate.Nodes.Editor
             return nodes;
         }
 
-        void Duplicate()
+        #region Duplicate
+        void DuplicateSelectedNodes()
         {
             var nodes = GetSelectedNodes().Where(node => node != root && !node.ParentLocked).ToList();
             var selection = GetSelection().ToList();
@@ -351,8 +365,10 @@ namespace Nexerate.Nodes.Editor
 
             RefreshEditor();
         }
+        #endregion
 
-        void Delete()
+        #region Delete
+        void DeleteSelectedNodes()
         {
             PerformUndoableAction(() =>
             {
@@ -365,7 +381,8 @@ namespace Nexerate.Nodes.Editor
             }, "Delete Node");
 
             RefreshEditor(true);
-        }
+        } 
+        #endregion
 
         void ShowNodeMenu(Node target = null)
         {
@@ -434,14 +451,14 @@ namespace Nexerate.Nodes.Editor
                 #region Duplicate
                 if (target != root && canModifyParent)
                 {
-                    menu.AddItem(new("Duplicate"), false, Duplicate);
+                    menu.AddItem(new("Duplicate"), false, DuplicateSelectedNodes);
                 }
                 #endregion
 
                 #region Delete
                 if (target != root && canModifyParent)
                 {
-                    menu.AddItem(new("Delete"), false, Delete);
+                    menu.AddItem(new("Delete"), false, DeleteSelectedNodes);
                 }
                 #endregion
             }
@@ -452,13 +469,13 @@ namespace Nexerate.Nodes.Editor
             {
                 menu.AddItem(new("Cut"), false, () =>
                 {
-                    NodeEditorUtility.Copy(GetSelectedNodes());
-                    Delete();
+                    Copy();
+                    DeleteSelectedNodes();
                 });
 
                 menu.AddItem(new("Copy"), false, () =>
                 {
-                    NodeEditorUtility.Copy(GetSelectedNodes());
+                    Copy();
                 });
             }
             else
@@ -471,12 +488,7 @@ namespace Nexerate.Nodes.Editor
             {
                 menu.AddItem(new("Paste"), false, () =>
                 {
-                    PerformUndoableAction(() =>
-                    {
-                        NodeEditorUtility.Paste(target);
-                    }, "Paste Node");
-                    SetExpanded(target.ID, true);
-                    RefreshEditor();
+                    Paste(target);
                 });
             }
             else
@@ -486,6 +498,25 @@ namespace Nexerate.Nodes.Editor
 
             menu.ShowAsContext();
         }
+
+        #region Copy/Paste
+        void Copy()
+        {
+            var selection = GetSelectedNodes();
+            selection.Remove(root);
+            NodeEditorUtility.Copy(selection);
+        }
+
+        void Paste(Node target)
+        {
+            PerformUndoableAction(() =>
+            {
+                NodeEditorUtility.Paste(target);
+            }, "Paste Node");
+            SetExpanded(target.ID, true);
+            RefreshEditor();
+        } 
+        #endregion
 
         void PerformUndoableAction(Action action, string undoMessage)
         {

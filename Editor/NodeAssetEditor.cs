@@ -14,7 +14,6 @@ namespace Nexerate.Nodes.Editor
         NodeAsset asset;
         VisualElement root;
 
-        internal static NodeTreeView view;
         internal static Action<bool> RefreshEditor;
 
         #region Theme Colors
@@ -82,7 +81,15 @@ namespace Nexerate.Nodes.Editor
 
             if (clearOnly) return;
 
-            var node = asset.Find(asset.SelectedID) ?? asset.Root;
+            int nodeID = asset.Root.ID;
+
+            if (EditorWindow.HasOpenInstances<NodeHierarchyWindow>())
+            {
+                var window = EditorWindow.GetWindow<NodeHierarchyWindow>();
+                nodeID = window.TreeViewState.lastClickedID;
+            }
+
+            var node = asset.Find(nodeID) ?? asset.Root;
 
             int index = asset.Nodes.IndexOf(node);
             if (index == -1) return;

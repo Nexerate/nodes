@@ -57,7 +57,7 @@ namespace Nexerate.Nodes
         #region Duplicate
         public Node Duplicate()
         {
-            NodeDuplicator duplicator = new(this, out Node duplicate);
+            _ = new NodeDuplicator(this, out Node duplicate);
             return duplicate;
 
             //string json = JsonUtility.ToJson(this);
