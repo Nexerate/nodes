@@ -64,7 +64,7 @@ namespace Nexerate.Nodes.Editor
             }
         }
 
-        [MenuItem("Node/Node Hierarchy")]
+        [MenuItem("Window/Nexerate Nodes/Node Hierarchy")]
         public static void ShowWindow()
         {
             var window = GetWindow<NodeHierarchyWindow>();
