@@ -57,33 +57,7 @@ namespace Nexerate.Nodes
         #region Duplicate
         public Node Duplicate()
         {
-            _ = new NodeDuplicator(this, out Node duplicate);
-            return duplicate;
-
-            //string json = JsonUtility.ToJson(this);
-
-            //Duplication happens on the node asset
-            //Add all nodes in selected node hierarchy to a list of nodes scheduled for duplication
-            //Replace nodes in list with duplicates
-            //Reparent nodes in list
-            //Regenerate IDs
-            //Add node back into hierarchy
-            //Duplicate every single node in this hierarchy
-
-            //One very good idea:
-            //Create an instance of class NodeDuplicator
-            //Add nodes that should be duplicated to nodes list of node duplicator
-            //JSON serialize
-            //Json deserialize
-            //Reparent nodes 
-            //Good to go
-
-            /*Node duplicate = (Node)JsonUtility.FromJson(json, GetType());
-
-            //Generate new IDs for the duplicated node and its children
-            duplicate.RegenerateIDs();
-
-            return duplicate;*/
+            return NodeDuplicator.Duplicate(this);
         }
         #endregion
 
@@ -456,24 +430,31 @@ namespace Nexerate.Nodes
     internal class NodeDuplicator
     {
         [SerializeReference] List<Node> nodes = new();
-        internal NodeDuplicator(Node node, out Node duplicate)
+        internal NodeDuplicator()
         {
-            CompileNodeListFromHierarchy(node);
 
-            string json = JsonUtility.ToJson(this);
-            var instance = JsonUtility.FromJson<NodeDuplicator>(json);
+        }
+
+        public static Node Duplicate(Node node)
+        {
+            NodeDuplicator duplicator = new();
+
+            duplicator.CompileNodeListFromHierarchy(node);
+
+            string json = JsonUtility.ToJson(duplicator);
+            duplicator = JsonUtility.FromJson<NodeDuplicator>(json);
 
             //Reparent
-            int count = instance.nodes.Count;
+            int count = duplicator.nodes.Count;
             for (int i = 0; i < count; i++)
             {
-                instance.nodes[i].SetParent(instance.nodes.Where(node => node.ID == instance.nodes[i].parentID).FirstOrDefault(), false, false);
+                duplicator.nodes[i].SetParent(duplicator.nodes.Where(node => node.ID == duplicator.nodes[i].parentID).FirstOrDefault(), false, false);
             }
 
             //Regenerate IDs
-            instance.nodes[0].RegenerateIDs();
+            duplicator.nodes[0].RegenerateIDs();
 
-            duplicate = instance.nodes[0];
+            return duplicator.nodes[0];
         }
 
         void CompileNodeListFromHierarchy(Node parent)
