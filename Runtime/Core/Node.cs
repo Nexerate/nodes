@@ -430,10 +430,6 @@ namespace Nexerate.Nodes
     internal class NodeDuplicator
     {
         [SerializeReference] List<Node> nodes = new();
-        internal NodeDuplicator()
-        {
-
-        }
 
         public static Node Duplicate(Node node)
         {

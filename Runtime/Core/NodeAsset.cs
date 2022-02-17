@@ -145,10 +145,5 @@ namespace Nexerate.Nodes
         #region Get Root Node
         public abstract Node Root { get; } 
         #endregion
-
-        #region Selected ID
-        //[SerializeField, HideInInspector] int selectedID;
-        //public int SelectedID { get => selectedID; set => selectedID = value; } 
-        #endregion
     }
 }

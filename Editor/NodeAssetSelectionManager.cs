@@ -36,4 +36,12 @@ namespace Nexerate.Nodes.Editor
             }
         }
     }
+
+    internal class NodeAssetCreationManager : AssetPostprocessor
+    {
+        static void OnPostProcessAsset()
+        {
+
+        }
+    }
 }

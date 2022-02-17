@@ -13,9 +13,11 @@ namespace Nexerate.Nodes.Editor
 {
     internal class NodeTreeView : TreeView
     {
-        internal NodeAsset asset;
-        internal Node root;
-        Type nodeType;
+        #region Fields
+        NodeAsset asset;
+        Node root;
+        Type nodeType; 
+        #endregion
 
         public NodeTreeView(NodeAsset nodeAsset, TreeViewState state) : base(state) 
         {
@@ -92,26 +94,22 @@ namespace Nexerate.Nodes.Editor
 
         void BuildRecursive(TreeViewItem item, Node node)
         {
-            //Problem here is that when the hierarchy is deleted, this class thinks it it empty
-            //In reality, the hierarchy is stored in the Asset's Nodes list
-            //Somehow we need to ensure that the hierarchy is always caought up with the nodes list and vice versa
-
             TreeViewItem child = new(node.ID) { displayName = node.Name };
 
             //You cannot edit the children of this node. Either because it is locked, or because it is in a locked hierarchy
             if (node.ChildrenLocked || node.HierarchyLocked || node.IsInLockedHierarchy)
             {
-                child.icon = (Texture2D)EditorGUIUtility.IconContent("InspectorLock").image;
+                child.icon = IconCache.Lock;
             }
             //You cannot move this node, but you can add and remove children
             else if (node.ParentLocked)
             {
-                child.icon = (Texture2D)EditorGUIUtility.IconContent("UnLinked").image;
+                child.icon = IconCache.UnLinked;
             }
             //This node can be moved freely
             else
             {
-                child.icon = (Texture2D)EditorGUIUtility.IconContent("Linked").image;
+                child.icon = IconCache.Linked;
             }
 
             item.AddChild(child);
@@ -175,10 +173,6 @@ namespace Nexerate.Nodes.Editor
                         int insertIndex = parent.id == 0 ? 0 : args.insertAtIndex;
                         Node targetParent = parent.id == 0 ? root: asset.Find(parent.id);
 
-                        //If node hierarchy is not recompiled, then asset.Find(id) might return null
-                        //This, in turn, would mean that all selected nodes will have their parent set to null
-                        //In other words, they will be deleted
-
                         if (args.dragAndDropPosition == DragAndDropPosition.UponItem)
                         {
                             foreach (var node in nodes)
@@ -217,29 +211,34 @@ namespace Nexerate.Nodes.Editor
             }
         }
 
-        int GetAdjustedInsertIndex(Node parent, Node child, int index)
+        int GetAdjustedInsertIndex(Node targetParent, Node targetNode, int index)
         {
-            //Need to account for parent index when moving outside of parent. Find ancestor below the parent
-            //You will drop on and _then_ get the child index
-
-            Node uppermostParent = child;
-
-            int security = 0;
-
-            while (uppermostParent.Parent != null && uppermostParent.Parent != parent && security < 50)
+            //This is only relevant when moving inside this parent. But wee need a way to do this correction in all instances.
+            if (targetParent == targetNode.Parent)
             {
-                uppermostParent = uppermostParent.Parent;
-                security++;
+                if (index > targetParent.IndexOf(targetNode))
+                {
+                    index--;
+                }
             }
+            else
+            {
+                //Get ancestors of targetNode
+                var ancestors = targetNode.GetAncestors();
+                
+                //Find ancestor with targetParent as its parent (if any)
+                var ancestor = ancestors.Where(node => node.Parent != null && node.Parent.ID == targetParent.ID).FirstOrDefault();
 
-            if (security >= 50) Debug.LogError("Infinite loop!");
-
-            if (uppermostParent.Parent != parent) return index;
-
-            var childIndex = parent.IndexOf(uppermostParent);
-
-            if (childIndex < index) index--;
-
+                //Target parent is an ancestor
+                if (ancestor != null)
+                {
+                    int ancestorIndex = targetParent.IndexOf(ancestor);
+                    if (index > ancestorIndex)
+                    {
+                        index--;
+                    }
+                }
+            }
             return index;
         }
 
@@ -297,7 +296,6 @@ namespace Nexerate.Nodes.Editor
                 {
                     if (!wasPressed)
                     {
-                        Debug.Log("copy");
                         wasPressed = true;
                         Copy();
                     }
@@ -306,7 +304,6 @@ namespace Nexerate.Nodes.Editor
                 {
                     if (!wasPressed)
                     {
-                        Debug.Log("paste");
                         wasPressed = true;
                         var selectedNode = asset.Find(state.lastClickedID) ?? root;
                         Paste(selectedNode);
@@ -518,7 +515,10 @@ namespace Nexerate.Nodes.Editor
         } 
         #endregion
 
-        void PerformUndoableAction(Action action, string undoMessage)
+        /// <summary>
+        /// Perform an action on the asset, that can be undone.
+        /// </summary>
+        void PerformUndoableAction(Action action, string undoMessage = "Undo")
         {
             Undo.RegisterCompleteObjectUndo(asset, undoMessage);
             action.Invoke();

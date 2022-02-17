@@ -31,6 +31,7 @@ namespace Nexerate.Nodes.Editor
         void UnsetNodeAsset()
         {
             nodeAsset = null;
+            Repaint();
         }
 
         public void Initialize(NodeAsset asset)
@@ -78,10 +79,10 @@ namespace Nexerate.Nodes.Editor
         static bool AssetOpenHierarchyWindow(int instanceID, int line)
         {
             var obj = EditorUtility.InstanceIDToObject(instanceID);
-            if (obj is NodeAsset node)
+            if (obj is NodeAsset asset)
             {
                 var window = GetWindow<NodeHierarchyWindow>();
-                window.Initialize(node);
+                window.Initialize(asset);
                 window.Show();
 
                 return true;//We handled the open
