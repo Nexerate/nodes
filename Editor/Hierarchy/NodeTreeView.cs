@@ -191,6 +191,7 @@ namespace Nexerate.Nodes.Editor
                         SetExpanded(parent.id, true);
                     }
                 }, "Reorder Node");
+                RefreshEditor();
             }
             return DragAndDropVisualMode.Move;
         }
