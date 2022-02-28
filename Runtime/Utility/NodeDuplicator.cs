@@ -14,17 +14,17 @@ namespace Nexerate.Nodes
 
         public static Node Duplicate(Node node)
         {
-            string json = SaveAsJSON(node);
+            string json = SaveAsJSON(node, false);
             return LoadFromJSON<Node>(json);
         }
 
-        public static string SaveAsJSON(Node node)
+        public static string SaveAsJSON(Node node, bool pretty = false)
         {
             NodeDuplicator duplicator = new();
 
             duplicator.CompileNodeListFromHierarchy(node);
 
-            return JsonUtility.ToJson(duplicator);
+            return JsonUtility.ToJson(duplicator, pretty);
         }
 
         public static T LoadFromJSON<T>(string json) where T : Node

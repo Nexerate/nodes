@@ -66,7 +66,7 @@ namespace Nexerate.Nodes
         /// <summary>
         /// Create a deep copy JSON output from this <see cref="Node"/> and its hierarchy. Can be loaded in using <see cref="LoadFromJSON{T}(string)"/>.
         /// </summary>
-        public string SaveAsJSON() => NodeDuplicator.SaveAsJSON(this);
+        public string SaveAsJSON(bool pretty = false) => NodeDuplicator.SaveAsJSON(this, pretty);
 
         /// <summary>
         /// Reconstructs a <see cref="Node"/> and its hierarchy from JSON text created using <see cref="SaveAsJSON"/>. 
