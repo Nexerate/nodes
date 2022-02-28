@@ -55,10 +55,23 @@ namespace Nexerate.Nodes
         #endregion
 
         #region Duplicate
-        public Node Duplicate()
-        {
-            return NodeDuplicator.Duplicate(this);
-        }
+        /// <summary>
+        /// Duplicate a <see cref="Node"/>. 
+        /// Internally, the <see cref="Node"/> and its hierarchy is saved as JSON, then loaded back from the JSON to create a deep copy.
+        /// </summary>
+        public Node Duplicate() => NodeDuplicator.Duplicate(this);
+        #endregion
+
+        #region Save & Load
+        /// <summary>
+        /// Create a deep copy JSON output from this <see cref="Node"/> and its hierarchy. Can be loaded in using <see cref="LoadFromJSON{T}(string)"/>.
+        /// </summary>
+        public string SaveAsJSON() => NodeDuplicator.SaveAsJSON(this);
+
+        /// <summary>
+        /// Reconstructs a <see cref="Node"/> and its hierarchy from JSON text created using <see cref="SaveAsJSON"/>. 
+        /// </summary>
+        public static T LoadFromJSON<T>(string json) where T : Node => NodeDuplicator.LoadFromJSON<T>(json); 
         #endregion
 
         #region ID
@@ -424,48 +437,5 @@ namespace Nexerate.Nodes
             return path.ToArray();
         } 
         #endregion
-    }
-
-    [Serializable]
-    internal class NodeDuplicator
-    {
-        [SerializeReference] List<Node> nodes = new();
-
-        public static Node Duplicate(Node node)
-        {
-            NodeDuplicator duplicator = new();
-
-            duplicator.CompileNodeListFromHierarchy(node);
-
-            string json = JsonUtility.ToJson(duplicator);
-            duplicator = JsonUtility.FromJson<NodeDuplicator>(json);
-
-            //Reparent
-            int count = duplicator.nodes.Count;
-            for (int i = 0; i < count; i++)
-            {
-                duplicator.nodes[i].SetParent(duplicator.nodes.Where(node => node.ID == duplicator.nodes[i].parentID).FirstOrDefault(), false, false);
-            }
-
-            //Regenerate IDs
-            duplicator.nodes[0].RegenerateIDs();
-
-            return duplicator.nodes[0];
-        }
-
-        void CompileNodeListFromHierarchy(Node parent)
-        {
-            //Root
-            if (nodes.Count == 0)
-            {
-                nodes.Add(parent);
-            }
-
-            for (int i = 0; i < parent.ChildCount; i++)
-            {
-                nodes.Add(parent[i]);
-                CompileNodeListFromHierarchy(parent[i]);
-            }
-        }
     }
 }
