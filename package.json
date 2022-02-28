@@ -1,6 +1,6 @@
 {
   "name": "com.nexerate.nodes",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "displayName": "Nexerate Nodes",
   "description": "Framework for creating node-based hierarchy tools in Unity.",
   "unity": "2021.2",
