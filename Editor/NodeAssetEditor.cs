@@ -9,7 +9,7 @@ using System;
 namespace Nexerate.Nodes.Editor
 {
     [CustomEditor(typeof(NodeAsset), true)]
-    internal class NodeAssetEditor : UnityEditor.Editor
+    public class NodeAssetEditor : UnityEditor.Editor
     {
         NodeAsset asset;
         VisualElement root;
@@ -23,6 +23,7 @@ namespace Nexerate.Nodes.Editor
         static Color Gray => DarkTheme ? new(69 / 255f, 69 / 255f, 69 / 255f) : new(187 / 255f, 187 / 255f, 187 / 255f);
         #endregion
 
+        #region Enable/Disable
         void OnEnable()
         {
             RefreshEditor -= Refresh;
@@ -30,17 +31,30 @@ namespace Nexerate.Nodes.Editor
 
             asset = (NodeAsset)target;
         }
+        void OnDisable()
+        {
+            RefreshEditor -= Refresh;
+        } 
+        #endregion
 
-        public override VisualElement CreateInspectorGUI()
+        public sealed override VisualElement CreateInspectorGUI()
         {
             root = new();
+
+            VisualElement assetEditor = new();
+            DrawAssetEditor(assetEditor);
+            root.Add(assetEditor);
+
             Refresh();
             return root;
         }
 
-        private void OnDisable()
+        /// <summary>
+        /// Override this function to draw a custom editor above the currently selected node in the <see cref="NodeAsset"/>. 
+        /// </summary>
+        protected virtual void DrawAssetEditor(VisualElement container)
         {
-            RefreshEditor -= Refresh;
+
         }
 
         #region Draw Node Header
@@ -104,6 +118,7 @@ namespace Nexerate.Nodes.Editor
             root.Add(field);
         }
     }
+
     [InitializeOnLoad]
     internal class PlayModeState
     {

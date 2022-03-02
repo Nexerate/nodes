@@ -69,7 +69,7 @@ namespace Nexerate.Nodes.Editor
         {
             //Asset is replaced with copy from undo stack.
             //Rebind the TreeView to the new asset located at the same path. 
-            InitializeRootAndAsset((NodeAsset)AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GetAssetPath(asset)));
+            InitializeRootAndAsset(AssetDatabase.LoadAssetAtPath<NodeAsset>(AssetDatabase.GetAssetPath(asset)));
             ReImport();
             asset.Enable();//OnEnable is not called on the asset taken from the undo stack. Initialize manually
             RefreshEditor();
