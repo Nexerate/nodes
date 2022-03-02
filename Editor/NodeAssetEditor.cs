@@ -51,14 +51,15 @@ namespace Nexerate.Nodes.Editor
         public sealed override VisualElement CreateInspectorGUI()
         {
             VisualElement root = new();
+            VisualElement assetEditor = new();
             nodeDrawer = new();
 
-            VisualElement assetEditor = new();
             DrawAssetEditor(assetEditor);
-            nodeDrawer.Add(assetEditor);
-
             Refresh();
+
+            root.Add(assetEditor);
             root.Add(nodeDrawer);
+
             return root;
         }
 
