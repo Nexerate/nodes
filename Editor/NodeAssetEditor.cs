@@ -30,11 +30,22 @@ namespace Nexerate.Nodes.Editor
             RefreshEditor += Refresh;
 
             asset = (NodeAsset)target;
+
+            Initialize();
         }
         void OnDisable()
         {
             RefreshEditor -= Refresh;
         } 
+
+        /// <summary>
+        /// Called in OnEnable after the base class has initialized itself. 
+        /// </summary>
+        protected virtual void Initialize()
+        {
+
+        }
+
         #endregion
 
         public sealed override VisualElement CreateInspectorGUI()
