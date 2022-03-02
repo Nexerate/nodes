@@ -12,7 +12,7 @@ namespace Nexerate.Nodes.Editor
     public class NodeAssetEditor : UnityEditor.Editor
     {
         NodeAsset asset;
-        VisualElement root;
+        VisualElement nodeDrawer;
 
         internal static Action<bool> RefreshEditor;
 
@@ -50,13 +50,15 @@ namespace Nexerate.Nodes.Editor
 
         public sealed override VisualElement CreateInspectorGUI()
         {
-            root = new();
+            VisualElement root = new();
+            nodeDrawer = new();
 
             VisualElement assetEditor = new();
             DrawAssetEditor(assetEditor);
-            root.Add(assetEditor);
+            nodeDrawer.Add(assetEditor);
 
             Refresh();
+            root.Add(nodeDrawer);
             return root;
         }
 
@@ -102,7 +104,7 @@ namespace Nexerate.Nodes.Editor
         public void Refresh(bool clearOnly = false)
         {
             serializedObject.Update();
-            root.Clear();
+            nodeDrawer.Clear();
 
             if (clearOnly) return;
 
@@ -119,14 +121,14 @@ namespace Nexerate.Nodes.Editor
             int index = asset.Nodes.IndexOf(node);
             if (index == -1) return;
 
-            DrawNodeHeader(root, node);
+            DrawNodeHeader(nodeDrawer, node);
 
             SerializedProperty property = serializedObject.FindProperty("nodes").GetArrayElementAtIndex(index);
 
             PropertyField field = new();
             field.BindProperty(property);
 
-            root.Add(field);
+            nodeDrawer.Add(field);
         }
     }
 
