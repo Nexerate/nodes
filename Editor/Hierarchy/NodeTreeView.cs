@@ -521,9 +521,8 @@ namespace Nexerate.Nodes.Editor
         /// </summary>
         void PerformUndoableAction(Action action, string undoMessage = "Undo")
         {
-            Undo.RegisterCompleteObjectUndo(asset, undoMessage);
+            Undo.RecordObject(asset, undoMessage);
             action.Invoke();
-            Undo.FlushUndoRecordObjects();
             EditorUtility.SetDirty(asset);
 
             ReImport();
