@@ -37,7 +37,7 @@ namespace Nexerate.Nodes.Editor
             Undo.undoRedoPerformed -= HandleUndo;
             Undo.undoRedoPerformed += HandleUndo;
 
-            //Make sure the hierarchy is built before we try and show it
+            //Make sure the asset hierarchy is built before we try to display it
             asset.RebuildHierarchy();
             Reload();
         }
@@ -51,10 +51,7 @@ namespace Nexerate.Nodes.Editor
             NodeAssetEditor.RefreshEditor?.Invoke(clear);
         }
 
-        protected override void SingleClickedItem(int id)
-        {
-            RefreshEditor();
-        }
+        protected override void SingleClickedItem(int id) => RefreshEditor();
 
         void InitializeRootAndAsset(NodeAsset nodeAsset)
         {
@@ -82,9 +79,7 @@ namespace Nexerate.Nodes.Editor
         {
             TreeViewItem rootItem = new(0, -1, "Root");
 
-            BuildRecursive(rootItem, root);
-
-            SetupDepthsFromParentsAndChildren(rootItem);
+            BuildRecursive(rootItem, root, 0);
 
             return rootItem;
         }
@@ -92,9 +87,9 @@ namespace Nexerate.Nodes.Editor
         //TODO (When supported, or in 2022 with UI Toolkit TreeView)
         //Disabled Nodes
 
-        void BuildRecursive(TreeViewItem item, Node node)
+        void BuildRecursive(TreeViewItem item, Node node, int depth)
         {
-            TreeViewItem child = new(node.ID) { displayName = node.Name };
+            TreeViewItem child = new(node.ID, depth, node.Name);
 
             //You cannot edit the children of this node. Either because it is locked, or because it is in a locked hierarchy
             if (node.ChildrenLocked || node.HierarchyLocked || node.IsInLockedHierarchy)
@@ -115,12 +110,13 @@ namespace Nexerate.Nodes.Editor
             item.AddChild(child);
             for (int i = 0; i < node.ChildCount; i++)
             {
-                BuildRecursive(child, node[i]);
+                BuildRecursive(child, node[i], depth + 1);
             }
         }
 
         protected override void SetupDragAndDrop(SetupDragAndDropArgs args)
         {
+            SetSelection(args.draggedItemIDs);
             DragAndDrop.PrepareStartDrag();
             var draggedRows = GetRows().Where(item => args.draggedItemIDs.Contains(item.id)).ToList();
             DragAndDrop.SetGenericData("NodeDragging", draggedRows);
@@ -243,17 +239,16 @@ namespace Nexerate.Nodes.Editor
             return index;
         }
 
-        protected override void ContextClicked()
-        {
-            ShowNodeMenu();
-        }
-
+        /// <summary>
+        /// Show a context menu when a node is right clicked.
+        /// </summary>
+        protected override void ContextClicked() => ShowNodeMenu();
+        
         protected override bool CanStartDrag(CanStartDragArgs args)
         {
             Node drag = asset.Find(args.draggedItem.id);
-            if (args.draggedItem.id == root.ID) return false;
+            if (drag.ID == root.ID) return false;
             if (drag.ParentLocked) return false;
-            if (drag.Parent != null && drag.Parent.ChildrenLocked) return false;
             return true;
         }
         

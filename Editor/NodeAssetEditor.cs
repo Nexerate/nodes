@@ -33,6 +33,7 @@ namespace Nexerate.Nodes.Editor
 
             Initialize();
         }
+
         void OnDisable()
         {
             RefreshEditor -= Refresh;
