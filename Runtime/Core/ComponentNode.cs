@@ -52,6 +52,7 @@ namespace Nexerate.Nodes
                         {
                             var newComponent = NodeComponent.CreateComponent(component, this);
                             newComponent.IsRequiredComponent = true;
+                            components.Add(newComponent);
                         }
                     }
                 }
