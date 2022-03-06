@@ -92,12 +92,16 @@ namespace Nexerate.Nodes.Editor
             }
         }
 
-
         void DrawComponent(VisualElement container, SerializedProperty component, int index)
         {
             PropertyField field = new(component);
             field.BindProperty(component);
             field.style.paddingBottom = 5;
+
+            field.RegisterValueChangeCallback(e =>
+            {
+                target.GetComponent(index).OnValidate();
+            });
 
             VisualElement componentContainer = new();
             componentContainer.style.borderBottomWidth = 1;

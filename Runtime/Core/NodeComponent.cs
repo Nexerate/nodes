@@ -25,6 +25,8 @@ namespace Nexerate.Nodes
     {
         public NodeComponent(Node target) { }
 
+        public virtual void OnValidate() { }
+
         public static NodeComponent CreateComponent(Type component, Node targetNode)
         {
             return (NodeComponent)Activator.CreateInstance(component, targetNode);
