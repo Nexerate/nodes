@@ -39,11 +39,11 @@ namespace Nexerate.Nodes
         #region Required Components
         void AddRequiredComponents()
         {
-            var required = GetType().GetCustomAttributes<RequireNodeComponents>(true);
-            if (required != null && required.Count() > 0)
+            var attributes = GetType().GetCustomAttributes<RequireNodeComponents>(true);
+            if (attributes != null && attributes.Count() > 0)
             {
-                //Do this for each [RequireComponents] attribute
-                foreach (var attribute in required)
+                //Do this for each [RequireNodeComponents] attribute
+                foreach (var attribute in attributes)
                 {
                     //Do this for each component in the attribute
                     foreach (var component in attribute.Components)
@@ -95,13 +95,13 @@ namespace Nexerate.Nodes
         /// Add a component of type T to the node.
         /// </summary>
         /// <typeparam name="T">Type of component to add.</typeparam>
-        public void AddComponent<T>() where T : NodeComponent => AddComponent(typeof(T));
+        public T AddComponent<T>() where T : NodeComponent => (T)AddComponent(typeof(T));
 
         /// <summary>
         /// Add a component of specified type to the node.
         /// </summary>
         /// <param name="component">Type of component to add.</param>
-        public void AddComponent(Type component)
+        public NodeComponent AddComponent(Type component)
         {
             if (ComponentCompatibleWithThisNode(component))
             {
@@ -111,9 +111,10 @@ namespace Nexerate.Nodes
                 {
                     NodeComponent instance = NodeComponent.CreateComponent(component, this);
                     components.Add(instance);
-                    //instance.Initialize();
+                    return instance;
                 }
             }
+            return null;
         }
 
         /// <summary>
@@ -182,6 +183,7 @@ namespace Nexerate.Nodes
         }
         #endregion
 
+        #region Move Component
         public void MoveComponentTo(int index, NodeComponent component)
         {
             if (components.Remove(component))
@@ -193,6 +195,7 @@ namespace Nexerate.Nodes
             {
                 Debug.LogError("Cannot move a component that is not attached to this Node");
             }
-        }
+        } 
+        #endregion
     }
 }
