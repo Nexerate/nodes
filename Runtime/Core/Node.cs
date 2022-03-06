@@ -437,5 +437,10 @@ namespace Nexerate.Nodes
             return path.ToArray();
         } 
         #endregion
+
+        /// <summary>
+        /// Called when a <see cref="Node"/> is changed in the Editor. Will not be triggered by hierarchy name changes.
+        /// </summary>
+        public virtual void OnValidate() { }
     }
 }

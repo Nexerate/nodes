@@ -130,6 +130,11 @@ namespace Nexerate.Nodes.Editor
             PropertyField field = new();
             field.BindProperty(property);
 
+            field.RegisterValueChangeCallback(e =>
+            {
+                node.OnValidate();
+            });
+
             nodeDrawer.Add(field);
         }
     }
