@@ -6,7 +6,7 @@ using System;
 namespace Nexerate.Nodes
 {
     /// <summary>
-    /// Base class for all Components that can be added to Nodes.
+    /// Base class for all components that can be added to nodes.
     /// Derived classes must add the [<seealso cref="SerializableAttribute"/>] attribute.
     /// </summary>
     /// <typeparam name="T">Type the component is designed for. Can be either interface or class.</typeparam>
@@ -23,8 +23,16 @@ namespace Nexerate.Nodes
     [Serializable]
     public class NodeComponent 
     {
+        [SerializeField] bool isRequiredComponent;
+
+        //This will be made init once supported
+        public bool IsRequiredComponent { get => isRequiredComponent; set => isRequiredComponent = value; }
+
         public NodeComponent(Node target) { }
 
+        /// <summary>
+        /// Called when a <see cref="NodeComponent"/> is changed in the Editor.
+        /// </summary>
         public virtual void OnValidate() { }
 
         public static NodeComponent CreateComponent(Type component, Node targetNode)

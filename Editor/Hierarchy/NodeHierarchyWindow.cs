@@ -14,15 +14,14 @@ namespace Nexerate.Nodes.Editor
         public TreeViewState TreeViewState => treeViewState;
 
         NodeTreeView treeView;
-        NodeAsset nodeAsset;
 
         GUIContent defaultTitle = new("Node Hierarchy");
 
-        public NodeAsset NodeAsset { get => nodeAsset; set => nodeAsset = value; }
+        public NodeAsset NodeAsset { get; set; }
 
         private void OnEnable()
         {
-            Initialize(nodeAsset);
+            Initialize(NodeAsset);
 
             NodeAssetSelectionManager.NodeAssetUnselected -= UnsetNodeAsset;
             NodeAssetSelectionManager.NodeAssetUnselected += UnsetNodeAsset;
@@ -30,13 +29,13 @@ namespace Nexerate.Nodes.Editor
 
         void UnsetNodeAsset()
         {
-            nodeAsset = null;
+            NodeAsset = null;
             Repaint();
         }
 
         public void Initialize(NodeAsset asset)
         {
-            nodeAsset = asset;
+            NodeAsset = asset;
 
             titleContent = new($"{(asset == null ? "Node" : asset.name)} Hierarchy");
 
@@ -46,13 +45,13 @@ namespace Nexerate.Nodes.Editor
                 {
                     treeViewState = new();
                 }
-                treeView = new(nodeAsset, treeViewState);
+                treeView = new(NodeAsset, treeViewState);
             }
         }
 
         private void OnGUI()
         {
-            if (nodeAsset != null)
+            if (NodeAsset != null)
             {
                 treeView.OnGUI(new(0, 0, position.width, position.height));
             }

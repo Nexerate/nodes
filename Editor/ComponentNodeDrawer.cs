@@ -176,7 +176,7 @@ namespace Nexerate.Nodes.Editor
                 {
                     GenericMenu menu = new();
                     //We can only remove the component if it is not required by the node
-                    if (target.RequiresComponent(target.GetComponent(index).GetType()))
+                    if (target.GetComponent(index).IsRequiredComponent)
                     {
                         menu.AddDisabledItem(new("Remove Component", "Component can not be removed as it is required by the node"));
                     }

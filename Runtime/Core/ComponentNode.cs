@@ -18,7 +18,6 @@ namespace Nexerate.Nodes
     {
         #region Components
         [SerializeReference, HideInInspector] protected List<NodeComponent> components = new();
-        [SerializeReference] List<Type> requiredComponents = new();
         #endregion
 
         #region Constructors
@@ -49,16 +48,15 @@ namespace Nexerate.Nodes
                     //Do this for each component in the attribute
                     foreach (var component in attribute.Components)
                     {
-                        if (!requiredComponents.Contains(component) && ComponentCompatibleWithThisNode(component))
+                        if (ComponentCompatibleWithThisNode(component))
                         {
-                            requiredComponents.Add(component);
-                            components.Add(NodeComponent.CreateComponent(component, this));
+                            var newComponent = NodeComponent.CreateComponent(component, this);
+                            newComponent.IsRequiredComponent = true;
                         }
                     }
                 }
             }
         } 
-        public bool RequiresComponent(Type componentType) => requiredComponents.Contains(componentType);
         #endregion
 
         #region Get Component
@@ -169,7 +167,7 @@ namespace Nexerate.Nodes
         /// <returns>True if the component was sucessfully removed.</returns>
         public bool RemoveComponent(NodeComponent component)
         {
-            if (!requiredComponents.Contains(component.GetType()))
+            if (!component.IsRequiredComponent)
             {
                 return components.Remove(component);
             }
@@ -177,11 +175,24 @@ namespace Nexerate.Nodes
         }
         public void RemoveComponentAt(int index)
         {
-            if (!requiredComponents.Contains(components[index].GetType()))
+            if (!components[index].IsRequiredComponent)
             {
                 components.RemoveAt(index);
             }
         }
         #endregion
+
+        public void MoveComponentTo(int index, NodeComponent component)
+        {
+            if (components.Remove(component))
+            {
+                index = Mathf.Clamp(index, 0, components.Count - 1);
+                components.Insert(index, component);
+            }
+            else
+            {
+                Debug.LogError("Cannot move a component that is not attached to this Node");
+            }
+        }
     }
 }
