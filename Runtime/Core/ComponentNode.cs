@@ -175,11 +175,30 @@ namespace Nexerate.Nodes
             }
             return false;
         }
+
+        /// <summary>
+        /// Remove component at <paramref name="index"/>.
+        /// </summary>
         public void RemoveComponentAt(int index)
         {
             if (!components[index].IsRequiredComponent)
             {
                 components.RemoveAt(index);
+            }
+        }
+
+        /// <summary>
+        /// Remove all components of type T. Required components will not be removed.
+        /// </summary>
+        public void RemoveComponentsOfType<T>()
+        {
+            int count = components.Count;
+            for (int i = count - 1; i >= 0; i--)
+            {
+                if (components[i].GetType().Equals(typeof(T)))
+                {
+                    RemoveComponentAt(i);
+                }
             }
         }
         #endregion
