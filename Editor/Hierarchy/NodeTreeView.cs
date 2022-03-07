@@ -481,7 +481,10 @@ namespace Nexerate.Nodes.Editor
             {
                 menu.AddItem(new("Paste"), false, () =>
                 {
-                    Paste(target);
+                    PerformUndoableAction(() =>
+                    {
+                        Paste(target);
+                    }, "Paste");
                 });
             }
             else
