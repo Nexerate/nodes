@@ -51,7 +51,7 @@ namespace Nexerate.Nodes.Editor
             NodeAssetEditor.RefreshEditor?.Invoke(clear);
         }
 
-        protected override void SingleClickedItem(int id) => RefreshEditor();
+        //protected override void SingleClickedItem(int id) => RefreshEditor();
 
         void InitializeRootAndAsset(NodeAsset nodeAsset)
         {
@@ -91,9 +91,6 @@ namespace Nexerate.Nodes.Editor
         {
             TreeViewItem child = new(node.ID, depth, node.Name);
 
-            //Is the parent locked? Special icon
-
-
             //You cannot edit the children of this node. Either because it is locked, or because it is in a locked hierarchy
             if (node.ChildrenLocked || node.HierarchyLocked || node.IsInLockedHierarchy)
             {
@@ -107,7 +104,6 @@ namespace Nexerate.Nodes.Editor
             //This node can be moved freely
             else
             {
-                //child.icon = IconCache.Linked;
                 child.icon = IconCache.Node;
             }
 
@@ -212,6 +208,12 @@ namespace Nexerate.Nodes.Editor
             }
         }
 
+        protected override void SelectionChanged(IList<int> selectedIds)
+        {
+            base.SelectionChanged(selectedIds);
+            RefreshEditor();
+        }
+
         int GetAdjustedInsertIndex(Node targetParent, Node targetNode, int index)
         {
             //This is only relevant when moving inside this parent. But wee need a way to do this correction in all instances.
@@ -244,9 +246,13 @@ namespace Nexerate.Nodes.Editor
         }
 
         /// <summary>
-        /// Show a context menu when a node is right clicked.
+        /// Show a menu when the hierarchy window is clicked.
         /// </summary>
         protected override void ContextClicked() => ShowNodeMenu();
+        /// <summary>
+        /// Show a context menu when a node is right clicked.
+        /// </summary>
+        protected override void ContextClickedItem(int id) => ShowNodeMenu(root.Find(id));
         
         protected override bool CanStartDrag(CanStartDragArgs args)
         {
@@ -528,9 +534,5 @@ namespace Nexerate.Nodes.Editor
             Reload();
         }
 
-        protected override void ContextClickedItem(int id)
-        {
-            ShowNodeMenu(root.Find(id));
-        }
     }
 }

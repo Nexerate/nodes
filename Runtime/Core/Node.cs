@@ -108,6 +108,9 @@ namespace Nexerate.Nodes
             //Node cannot be parented to itself
             if (node == newParent) return false;
 
+            //If the node requires a parent, and the new parent is null, then the parenting is invalid
+            //if (node.parentLockState == ParentLockState.Required && newParent == null) return false;
+
             //Check if both parents allow for hierarchy modification
             if (Validate(node.parent) && Validate(newParent))
             {

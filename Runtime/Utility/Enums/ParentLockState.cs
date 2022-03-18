@@ -9,6 +9,10 @@
         /// <summary>
         /// You cannot change the parent of this <see cref="Node"/>.
         /// </summary>
-        Locked
+        Locked/*,
+        /// <summary>
+        /// A parent is required for the <see cref="Node"/>. In other words, the <see cref="Node"/> must always be part of a hierarchy, and cannot be a root.
+        /// </summary>
+        Required*/
     }
 }
