@@ -91,6 +91,9 @@ namespace Nexerate.Nodes.Editor
         {
             TreeViewItem child = new(node.ID, depth, node.Name);
 
+            //Is the parent locked? Special icon
+
+
             //You cannot edit the children of this node. Either because it is locked, or because it is in a locked hierarchy
             if (node.ChildrenLocked || node.HierarchyLocked || node.IsInLockedHierarchy)
             {
@@ -99,12 +102,13 @@ namespace Nexerate.Nodes.Editor
             //You cannot move this node, but you can add and remove children
             else if (node.ParentLocked)
             {
-                child.icon = IconCache.UnLinked;
+                child.icon = IconCache.Linked;
             }
             //This node can be moved freely
             else
             {
-                child.icon = IconCache.Linked;
+                //child.icon = IconCache.Linked;
+                child.icon = IconCache.Node;
             }
 
             item.AddChild(child);
@@ -481,10 +485,7 @@ namespace Nexerate.Nodes.Editor
             {
                 menu.AddItem(new("Paste"), false, () =>
                 {
-                    PerformUndoableAction(() =>
-                    {
-                        Paste(target);
-                    }, "Paste");
+                    Paste(target);
                 });
             }
             else

@@ -1,7 +1,4 @@
-﻿#region Using
-#endregion
-
-namespace Nexerate.Nodes
+﻿namespace Nexerate.Nodes
 {
     public enum ParentLockState
     {
