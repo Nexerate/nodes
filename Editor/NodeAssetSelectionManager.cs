@@ -8,7 +8,11 @@ namespace Nexerate.Nodes.Editor
     [InitializeOnLoad]
     public class NodeAssetSelectionManager
     {
-        public static event Action NodeAssetUnselected;
+        #region Events
+        public static event Action<NodeAsset> NodeAssetSelected;
+        public static event Action NodeAssetUnselected; 
+        #endregion
+
         static NodeAssetSelectionManager()
         {
             Selection.selectionChanged -= OnSelection;
@@ -17,31 +21,21 @@ namespace Nexerate.Nodes.Editor
 
         static void OnSelection()
         {
-            var asset = Selection.activeObject as NodeAsset;
+            var selection = Selection.activeObject as NodeAsset;
 
-            if (asset != null)
+            if (selection is NodeAsset asset)
             {
-                if (typeof(NodeAsset).IsAssignableFrom(asset.GetType()))
+                if (EditorWindow.HasOpenInstances<NodeHierarchyWindow>())
                 {
-                    if (EditorWindow.HasOpenInstances<NodeHierarchyWindow>())
-                    {
-                        NodeHierarchyWindow window = EditorWindow.GetWindow<NodeHierarchyWindow>();
-                        window.Initialize(asset);
-                    }
+                    NodeHierarchyWindow window = EditorWindow.GetWindow<NodeHierarchyWindow>();
+                    window.Initialize(selection);
                 }
+                NodeAssetSelected?.Invoke(selection);
             }
             else
             {
                 NodeAssetUnselected?.Invoke();
             }
-        }
-    }
-
-    internal class NodeAssetCreationManager : AssetPostprocessor
-    {
-        static void OnPostProcessAsset()
-        {
-
         }
     }
 }
