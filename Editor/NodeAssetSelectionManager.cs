@@ -6,7 +6,7 @@ using System;
 namespace Nexerate.Nodes.Editor
 {
     [InitializeOnLoad]
-    internal class NodeAssetSelectionManager
+    public class NodeAssetSelectionManager
     {
         public static event Action NodeAssetUnselected;
         static NodeAssetSelectionManager()
