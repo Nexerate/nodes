@@ -15,9 +15,12 @@ namespace Nexerate.Nodes.Editor
 
         NodeTreeView treeView;
 
-        GUIContent defaultTitle = new("Node Hierarchy");
+        readonly GUIContent defaultTitle = new("Node Hierarchy");
 
-        public NodeAsset NodeAsset { get; set; }
+        #region Node Asset
+        [SerializeField] NodeAsset asset;
+        public NodeAsset NodeAsset { get => asset; set => asset = value; } 
+        #endregion
 
         private void OnEnable()
         {

@@ -60,9 +60,8 @@ namespace Nexerate.Nodes.Editor
 
             var generics = t.GetGenericArguments();
             if (generics == null) return false;
-            var generic = generics[0];
-            if (generic.IsAssignableFrom(target.GetType())) return true;
-            else return false;
+            if (generics[0].IsAssignableFrom(target.GetType())) return true;
+            return false;
         }
 
         void Draw()
@@ -94,14 +93,6 @@ namespace Nexerate.Nodes.Editor
 
         void DrawComponent(VisualElement container, SerializedProperty component, int index)
         {
-            PropertyField field = new(component);
-            field.BindProperty(component);
-            field.style.paddingBottom = 5;
-
-            field.RegisterValueChangeCallback(e =>
-            {
-                target.GetComponent(index).OnValidate();
-            });
 
             VisualElement componentContainer = new();
             componentContainer.style.borderBottomWidth = 1;
@@ -111,18 +102,51 @@ namespace Nexerate.Nodes.Editor
             componentContainer.style.marginRight = -6;
             componentContainer.style.paddingLeft = 15;
 
-            Foldout foldout = ComponentFoldout(index, target.GetComponent(index));
+            Foldout foldout = ComponentFoldout(index);
 
-            foldout.Add(field);
+            #region Field
+            if (component.managedReferenceValue == null)
+            {
+                foldout.Add(new IMGUIContainer(() =>
+                {
+                    EditorGUILayout.HelpBox("Missing component!", MessageType.Warning);
+                })
+                {
+                    style =
+                    {
+                        marginTop = 5,
+                        marginBottom = 5
+                    }
+                });
+            }
+            else
+            {
+                PropertyField field = new(component);
+                field.BindProperty(component);
+                field.style.paddingBottom = 5;
+
+                field.RegisterValueChangeCallback(e =>
+                {
+                    target.GetComponent(index).OnValidate();
+                });
+                foldout.Add(field);
+            }
+            #endregion
+
             componentContainer.Add(foldout);
             container.Add(componentContainer);
         }
 
-        Foldout ComponentFoldout(int index, NodeComponent component)
+        Foldout ComponentFoldout(int index)
         {
             Foldout foldout = new();
+            var component = target.GetComponent(index);
 
-            string key = $"{component.GetType().Name}EditorFoldout";
+            bool missing = component == null;
+
+            string header = missing ? "Missing" :component.GetType().Name;
+
+            string key = $"{header}EditorFoldout";
             if (PlayerPrefs.HasKey(key))
             {
                 foldout.value = PlayerPrefs.GetInt(key) == 1;
@@ -167,7 +191,7 @@ namespace Nexerate.Nodes.Editor
                 }*/
                 #endregion
 
-                Label label = new(target.GetComponent(index).GetType().Name.SpaceBeforeUppercase().Remove("Component").Trim());
+                Label label = new(header.SpaceBeforeUppercase().Remove("Component").Trim());
                 label.style.unityFontStyleAndWeight = FontStyle.Bold;
                 background.Add(label);
 
@@ -176,9 +200,9 @@ namespace Nexerate.Nodes.Editor
                 {
                     GenericMenu menu = new();
                     //We can only remove the component if it is not required by the node
-                    if (target.GetComponent(index).IsRequiredComponent)
+                    if (!missing && component.IsRequiredComponent)
                     {
-                        menu.AddDisabledItem(new("Remove Component", "Component can not be removed as it is required by the node"));
+                        menu.AddDisabledItem(new("Remove Component"));
                     }
                     else
                     {
@@ -255,8 +279,16 @@ namespace Nexerate.Nodes.Editor
         #region Remove Component
         void RemoveComponent(int index)
         {
-            if (!components.Contains(target.GetComponent(index).GetType()))
-                components.Add(target.GetComponent(index).GetType());
+            var component = target.GetComponent(index);
+
+            //Only way for components to be null is if their type is removed from the project
+            //Therefore, there is no problem that it won't be added back to the menu
+            if (component != null)
+            {
+                //Add component type back to the 'Add Component' menu if it wasn't already there
+                if (!components.Contains(component.GetType()))
+                    components.Add(component.GetType());
+            }
 
             Undo.RegisterCompleteObjectUndo(serializedObject.targetObject, "Remove Component");
             target.RemoveComponentAt(index);

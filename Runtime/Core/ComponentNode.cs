@@ -181,7 +181,7 @@ namespace Nexerate.Nodes
         /// </summary>
         public void RemoveComponentAt(int index)
         {
-            if (!components[index].IsRequiredComponent)
+            if (components[index] == null || !components[index].IsRequiredComponent)
             {
                 components.RemoveAt(index);
             }

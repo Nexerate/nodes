@@ -40,4 +40,12 @@ namespace Nexerate.Nodes
             return (NodeComponent)Activator.CreateInstance(component, targetNode);
         }
     }
+
+    /*[Serializable]
+    [AddNodeComponentMenu("Test")]
+    public class TestComponent : NodeComponent<Node>
+    {
+        public float test = 1;
+        public TestComponent(Node target) : base(target) { }
+    }*/
 }
