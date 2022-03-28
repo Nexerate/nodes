@@ -26,8 +26,8 @@ namespace Nexerate.Nodes.Editor
         {
             Initialize(NodeAsset);
 
-            NodeAssetSelectionManager.NodeAssetUnselected -= UnsetNodeAsset;
-            NodeAssetSelectionManager.NodeAssetUnselected += UnsetNodeAsset;
+            /*NodeAssetSelectionManager.NodeAssetUnselected -= UnsetNodeAsset;
+            NodeAssetSelectionManager.NodeAssetUnselected += UnsetNodeAsset;*/
         }
 
         void UnsetNodeAsset()
