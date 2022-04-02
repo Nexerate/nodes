@@ -42,12 +42,13 @@ namespace Nexerate.Nodes.Editor
 
             titleContent = new($"{(asset == null ? "Node" : asset.name)} Hierarchy");
 
+            if (treeViewState == null)
+            {
+                treeViewState = new();
+            }
+
             if (asset != null)
             {
-                if (treeViewState == null)
-                {
-                    treeViewState = new();
-                }
                 treeView = new(NodeAsset, treeViewState);
             }
         }
