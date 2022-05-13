@@ -263,7 +263,7 @@ namespace Nexerate.Nodes.Editor
         #region Add Component
         void AddComponent(Type component)
         {
-            if (component.GetCustomAttribute<DisallowMultipleComponent>() != null)
+            if (component.GetCustomAttribute<DisallowMultiple>() != null)
                 components.Remove(component);
 
             Undo.RegisterCompleteObjectUndo(serializedObject.targetObject, "Add Component");

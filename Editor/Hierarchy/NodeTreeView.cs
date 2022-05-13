@@ -15,15 +15,16 @@ namespace Nexerate.Nodes.Editor
     {
         #region Fields
         NodeAsset asset;
+        Type nodeType;
         Node root;
-        Type nodeType; 
         #endregion
 
         public NodeTreeView(NodeAsset nodeAsset, TreeViewState state) : base(state) 
         {
-            #region Get Base Node Type From Generic Argument Of Node Asset Base Class
             asset = nodeAsset;
-            Type type = asset.GetType().BaseType;
+
+            #region Get Base Node Type From Generic Argument Of Node Asset Base Class
+            var type = asset.GetType().BaseType;
 
             while (type.BaseType != typeof(NodeAsset) && type.BaseType != null)
             {
@@ -67,13 +68,13 @@ namespace Nexerate.Nodes.Editor
             //Asset is replaced with copy from undo stack.
             //Rebind the TreeView to the new asset located at the same path. 
             InitializeRootAndAsset(AssetDatabase.LoadAssetAtPath<NodeAsset>(AssetDatabase.GetAssetPath(asset)));
-            ReImport();
+            //ReImport();
             asset.Enable();//OnEnable is not called on the asset taken from the undo stack. Initialize manually
             RefreshEditor();
             Reload();
         }
 
-        void ReImport() => AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(asset));
+        //void ReImport() => AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(asset));
 
         protected override TreeViewItem BuildRoot()
         {
@@ -91,27 +92,26 @@ namespace Nexerate.Nodes.Editor
         {
             TreeViewItem child = new(node.ID, depth, node.Name);
 
-            //You cannot edit the children of this node. Either because it is locked, or because it is in a locked hierarchy
-            if (node.ChildrenLocked || node.HierarchyLocked || node.IsInLockedHierarchy)
-            {
-                child.icon = IconCache.Lock;
-            }
-            //You cannot move this node, but you can add and remove children
-            else if (node.ParentLocked)
-            {
-                child.icon = IconCache.Linked;
-            }
-            //This node can be moved freely
-            else
-            {
-                child.icon = IconCache.Node;
-            }
+            UpdateIcon(child, node);
 
             item.AddChild(child);
             for (int i = 0; i < node.ChildCount; i++)
             {
                 BuildRecursive(child, node[i], depth + 1);
             }
+        }
+
+        void UpdateIcon(TreeViewItem item, Node node)
+        {
+            //You cannot edit the children of this Node. Either because it is locked, or because it is in a locked hierarchy
+            if (node.ChildrenLocked || node.HierarchyLocked || node.IsInLockedHierarchy)
+            {
+                item.icon = IconCache.Lock;
+                return;
+            }
+
+            //Set node icon based on parent LockState
+            item.icon = node.ParentLocked ? IconCache.Linked : IconCache.Node;
         }
 
         protected override void SetupDragAndDrop(SetupDragAndDropArgs args)
@@ -128,67 +128,73 @@ namespace Nexerate.Nodes.Editor
             List<TreeViewItem> items = (List<TreeViewItem>)DragAndDrop.GetGenericData("NodeDragging");
 
             var parent = args.parentItem;
-            if (parent != null)
+
+            if (parent != null && parent.icon == IconCache.Lock) return DragAndDropVisualMode.Rejected;
+
+            //Stop here if we aren't dropping any items
+            if (!args.performDrop) return DragAndDropVisualMode.Move;
+
+            CleanUpDroppedItems(items, args);
+
+            PerformUndoableAction(() =>
             {
-                var node = asset.Find(parent.id);
-                if (node != null)
+                //Dragged nodes will be parented to the target
+                Node target = parent == null || parent.id == 0 ? root: asset.Find(parent.id);
+
+                //Create an array of nodes from the item list
+                var nodes = new Node[items.Count];
+                for (int i = 0; i < items.Count; i++)
                 {
-                    if (node.ChildrenLocked || node.HierarchyLocked || node.IsInLockedHierarchy) 
-                    { 
-                        return DragAndDropVisualMode.Rejected;
-                    }
+                    nodes[i] = asset.Find(items[i].id);
                 }
-            }
 
-            //Perform drop
-            if (args.performDrop)
-            {
-                CleanUpDroppedItems(items, args);
-
-                PerformUndoableAction(() =>
+                //If we drag outside the hierarchy, set the parent of all selected nodes to the root
+                if (args.dragAndDropPosition == DragAndDropPosition.OutsideItems)
                 {
-                    //Create an array of nodes from the item list
-                    var nodes = new Node[items.Count];
-                    for (int i = 0; i < items.Count; i++)
+                    foreach (var node in nodes)
                     {
-                        nodes[i] = asset.Find(items[i].id);
+                        node.SetParent(target);
                     }
 
-                    if (args.dragAndDropPosition == DragAndDropPosition.OutsideItems)
-                    {
-                        //Iterate over all of the items and set their parent to be the root
-                        foreach (var node in nodes)
-                        {
-                            node.SetParent(root);
-                        }
-                    }
-                    else
-                    {
-                        //Because of a TreeView bug, we have to account for args.parentItem.id being the id of the root TreeViewItem
-                        //This happens when we try to drop nodes right below the root node.
-                        int insertIndex = parent.id == 0 ? 0 : args.insertAtIndex;
-                        Node targetParent = parent.id == 0 ? root: asset.Find(parent.id);
+                    return;
+                }
 
-                        if (args.dragAndDropPosition == DragAndDropPosition.UponItem)
-                        {
-                            foreach (var node in nodes)
-                            {
-                                node.SetParent(targetParent);
-                            }
-                        }
-                        else
-                        {
-                            for (int i = nodes.Length - 1; i >= 0; i--)
-                            {
-                                insertIndex = GetAdjustedInsertIndex(targetParent, nodes[i], insertIndex);
-                                targetParent.InsertChild(insertIndex, nodes[i]);
-                            }
-                        }
-                        SetExpanded(parent.id, true);
+                if (args.dragAndDropPosition == DragAndDropPosition.UponItem)
+                {
+                    foreach (var node in nodes)
+                    {
+                        node.SetParent(target);
                     }
-                }, "Reorder Node");
-                RefreshEditor();
-            }
+
+                    SetExpanded(parent.id, true);
+                    return;
+                }
+
+                //Because of a TreeView bug, we have to account for args.parentItem.id being the id of the root TreeViewItem
+                //This happens when we try to drop nodes right below the root node.
+                int index = parent.id == 0 ? 0 : args.insertAtIndex;
+
+                var anchorNode = index >= target.ChildCount? null : target[index];
+
+                if (nodes.Contains(anchorNode)) return;
+
+                for (int i = 0; i < nodes.Length; i++)
+                {
+                    nodes[i].SetParent(null);
+                }
+
+                index = anchorNode == null? target.ChildCount : target.IndexOf(anchorNode);
+
+                for (int i = 0; i < nodes.Length; i++)
+                {
+                    target.InsertChild(index + i, nodes[i]);
+                }
+
+                SetExpanded(parent.id, true);
+            }, "Reorder Node");
+
+            RefreshEditor();
+
             return DragAndDropVisualMode.Move;
         }
 
@@ -212,37 +218,6 @@ namespace Nexerate.Nodes.Editor
         {
             base.SelectionChanged(selectedIds);
             RefreshEditor();
-        }
-
-        int GetAdjustedInsertIndex(Node targetParent, Node targetNode, int index)
-        {
-            //This is only relevant when moving inside this parent. But wee need a way to do this correction in all instances.
-            if (targetParent == targetNode.Parent)
-            {
-                if (index > targetParent.IndexOf(targetNode))
-                {
-                    index--;
-                }
-            }
-            else
-            {
-                //Get ancestors of targetNode
-                var ancestors = targetNode.GetAncestors();
-                
-                //Find ancestor with targetParent as its parent (if any)
-                var ancestor = ancestors.Where(node => node.Parent != null && node.Parent.ID == targetParent.ID).FirstOrDefault();
-
-                //Target parent is an ancestor
-                if (ancestor != null)
-                {
-                    int ancestorIndex = targetParent.IndexOf(ancestor);
-                    if (index > ancestorIndex)
-                    {
-                        index--;
-                    }
-                }
-            }
-            return index;
         }
 
         /// <summary>
@@ -530,9 +505,8 @@ namespace Nexerate.Nodes.Editor
             action.Invoke();
             EditorUtility.SetDirty(asset);
 
-            ReImport();
+            //ReImport();
             Reload();
         }
-
     }
 }

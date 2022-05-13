@@ -36,7 +36,7 @@ namespace Nexerate.Nodes
     public abstract class NodeAsset : ScriptableObject
     {
         #region Nodes
-        [SerializeReference, HideInInspector] List<Node> nodes = new();
+        [SerializeReference] List<Node> nodes = new();
         /// <summary>
         /// Cached list of nodes in the <see cref="NodeAsset"/>. Faster to search this list than traverse the hierarchy yourself.
         /// List is updated when the <see cref="Node"/> hierarchy changes.

@@ -288,6 +288,13 @@ namespace Nexerate.Nodes
             }
             return node;
         }
+
+        /// <summary>
+        /// Get child at index. You can also use Node[index]
+        /// </summary>
+        /// <param name="index">Index of child.</param>
+        /// <returns>Child node at specified index.</returns>
+        public Node GetChild(int index) => children[index];
         #endregion
 
         #region Index
@@ -307,6 +314,7 @@ namespace Nexerate.Nodes
             //Child parent is the same, but child was moved
             //SetParent will not call HierarchyChanged, so we need to do it ourselves after the reorder has happened
             bool reorder = child.parent == this;
+            //Debug.Log(reorder);
 
             //Execute logic if the parent was successfully set to this node
             if (child.SetParent(this))
@@ -314,7 +322,8 @@ namespace Nexerate.Nodes
                 children.Remove(child);
                 children.Insert(index, child);
             }
-            if (reorder) OnChildrenChangedInternal();
+            OnChildrenChangedInternal();
+            //if (reorder) OnChildrenChangedInternal();
         }
         #endregion
 

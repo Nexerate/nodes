@@ -2,79 +2,63 @@
 using UnityEditor.IMGUI.Controls;
 using UnityEditor.Callbacks;
 using UnityEngine;
-using UnityEditor; 
+using UnityEditor;
 #endregion
 
 namespace Nexerate.Nodes.Editor
 {
     public sealed class NodeHierarchyWindow : EditorWindow
     {
-        [SerializeField] TreeViewState treeViewState;
 
-        public TreeViewState TreeViewState => treeViewState;
+        const string DefaultHeader = "Node Hierarchy";
+
+        #region TreeView State
+        [SerializeField] TreeViewState treeViewState;
+        public TreeViewState TreeViewState => treeViewState; 
+        #endregion
 
         NodeTreeView treeView;
 
-        readonly GUIContent defaultTitle = new("Node Hierarchy");
-
         #region Node Asset
         [SerializeField] NodeAsset asset;
-        public NodeAsset NodeAsset { get => asset; set => asset = value; } 
+        public NodeAsset NodeAsset 
+        { 
+            get => asset; 
+            set
+            {
+                asset = value;
+                titleContent.text = asset == null ? DefaultHeader : asset.name;
+                Repaint();
+            }
+        } 
         #endregion
 
         private void OnEnable()
         {
             Initialize(NodeAsset);
-
-            /*NodeAssetSelectionManager.NodeAssetUnselected -= UnsetNodeAsset;
-            NodeAssetSelectionManager.NodeAssetUnselected += UnsetNodeAsset;*/
-        }
-
-        void UnsetNodeAsset()
-        {
-            NodeAsset = null;
-            Repaint();
         }
 
         public void Initialize(NodeAsset asset)
         {
-            NodeAsset = asset;
+            treeViewState ??= new();
 
-            titleContent = new($"{(asset == null ? "Node" : asset.name)} Hierarchy");
-
-            if (treeViewState == null)
-            {
-                treeViewState = new();
-            }
-
-            if (asset != null)
-            {
-                treeView = new(NodeAsset, treeViewState);
-            }
+            if ((NodeAsset = asset) == null) return;
+            
+            treeView = new(NodeAsset, treeViewState);
         }
 
         private void OnGUI()
         {
-            if (NodeAsset != null)
-            {
-                treeView.OnGUI(new(0, 0, position.width, position.height));
-            }
-            else
-            {
-                if(titleContent != defaultTitle)
-                {
-                    titleContent = defaultTitle;
-                }
-            }
+            if (NodeAsset == null) return;
+
+            treeView.OnGUI(new(0, 0, position.width, position.height));
         }
 
         [MenuItem("Window/Nexerate Nodes/Node Hierarchy")]
         public static void ShowWindow()
         {
             var window = GetWindow<NodeHierarchyWindow>();
-
             window.Initialize(null);
-
             window.Show();
         }
 

@@ -93,13 +93,20 @@ namespace Nexerate.Nodes.Editor
         protected override void ItemSelected(AdvancedDropdownItem item)
         {
             if (names != null)
-                clickedName?.Invoke(item.name);
-            else if (types != null)
             {
-                var output = types.Where(type => type.Name == item.name.RemoveSpaces()).FirstOrDefault();
-                if (output == null) output = types.Where(type => type.Name == item.name.RemoveSpaces() + formatOut).FirstOrDefault();
-                clickedType?.Invoke(output);
+                clickedName?.Invoke(item.name);
+                return;
             }
+
+            var output = types.Where(type => type.Name == item.name.RemoveSpaces()).FirstOrDefault();
+
+            //First we try and find a type where "format out" was formatted out
+            if (output == null) output = types.Where(type => type.Name == item.name.RemoveSpaces() + formatOut).FirstOrDefault();
+
+            //Try again, but without adding "format out" back in
+            if (output == null) output = types.Where(type => type.Name == item.name.RemoveSpaces()).FirstOrDefault();
+
+            clickedType?.Invoke(output);
         }
     }
 }
