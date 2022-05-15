@@ -40,7 +40,7 @@ namespace Nexerate.Nodes.Editor
         } 
 
         /// <summary>
-        /// Called in OnEnable after the base class has initialized itself. 
+        /// Called in <see cref="OnEnable"/> after the base class has initialized itself. 
         /// </summary>
         protected virtual void Initialize()
         {
@@ -57,6 +57,7 @@ namespace Nexerate.Nodes.Editor
 
             DrawAssetEditor(assetEditor);
             Refresh();
+            AssetDatabase.SaveAssets();
 
             root.Add(assetEditor);
             root.Add(nodeDrawer);

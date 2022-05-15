@@ -14,12 +14,17 @@ namespace Nexerate.Nodes
     public abstract class NodeAsset<BaseNodeType> : NodeAsset where BaseNodeType : Node, new()
     {
         [SerializeReference, HideInInspector] protected BaseNodeType root;
+        
+        //When covariance is supported, change Node to BaseNodeType
         public sealed override Node Root => root;
 
         #region Constructor
         public NodeAsset()
         {
             root = BuildHierarchy();
+
+            //We have to recompile the entire node list because BuildHierarchy can return an entire hierarchy
+            ReCompileNodeList();
         }
 
         /// <summary>
@@ -33,7 +38,7 @@ namespace Nexerate.Nodes
         #endregion
     }
 
-    public abstract class NodeAsset : ScriptableObject
+    public abstract class NodeAsset : ScriptableObject, ISerializationCallbackReceiver
     {
         #region Nodes
         [SerializeReference] List<Node> nodes = new();
@@ -53,13 +58,7 @@ namespace Nexerate.Nodes
         public void Enable()
         {
             RebuildHierarchy();
-
-            var root = Root;
-            root.ChildrenChanged -= OnGraphChangedInternal;
-            root.ChildrenChanged += OnGraphChangedInternal;
-
             ReCompileNodeList();
-
             Initialize();
         }
 
@@ -90,7 +89,7 @@ namespace Nexerate.Nodes
         /// <summary>
         /// Invoked when the root detects a hierarchy change. Will recompile the node list and call <see cref="OnGraphChanged"/>.
         /// </summary>
-        void OnGraphChangedInternal()
+        protected internal void OnGraphChangedInternal()
         {
             ReCompileNodeList();
             OnGraphChanged();
@@ -102,12 +101,7 @@ namespace Nexerate.Nodes
         protected virtual void OnGraphChanged() { } 
         #endregion
 
-        void ReCompileNodeList()
-        {
-            nodes.Clear();
-            CompileNodeListFromHierarchy(Root);
-        }
-
+        #region Find
         /// <summary>
         /// Find <see cref="Node"/> where <see cref="Node.ID"/> matches <paramref name="id"/>.
         /// </summary>
@@ -119,9 +113,20 @@ namespace Nexerate.Nodes
         /// <summary>
         /// Find nodes where <see cref="Node.Name"/> matches <paramref name="name"/>.
         /// </summary>
-        public Node[] Find(string name)
+        public IEnumerable<Node> Find(string name)
         {
-            return nodes.Where(node => node.Name == name).ToArray();
+            return nodes.Where(node => node.Name == name);
+        }
+        #endregion
+
+        #region Compile Node List
+        /// <summary>
+        /// Recompile the <see cref="nodes"/> list from the <see cref="Root"/> hierarchy.
+        /// </summary>
+        protected void ReCompileNodeList()
+        {
+            nodes.Clear();
+            CompileNodeListFromHierarchy(Root);
         }
 
         void CompileNodeListFromHierarchy(Node parent)
@@ -141,6 +146,13 @@ namespace Nexerate.Nodes
                 CompileNodeListFromHierarchy(parent[i]);
             }
         }
+        #endregion
+
+        #region Serialization Logic
+        public void OnBeforeSerialize() => Root.ChildrenChanged -= OnGraphChangedInternal;
+
+        public void OnAfterDeserialize() => Root.ChildrenChanged += OnGraphChangedInternal; 
+        #endregion
 
         #region Get Root Node
         public abstract Node Root { get; } 

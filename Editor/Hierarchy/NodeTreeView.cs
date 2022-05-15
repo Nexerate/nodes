@@ -159,6 +159,7 @@ namespace Nexerate.Nodes.Editor
                     return;
                 }
 
+
                 if (args.dragAndDropPosition == DragAndDropPosition.UponItem)
                 {
                     foreach (var node in nodes)
@@ -224,14 +225,16 @@ namespace Nexerate.Nodes.Editor
         /// Show a menu when the hierarchy window is clicked.
         /// </summary>
         protected override void ContextClicked() => ShowNodeMenu();
+        
         /// <summary>
         /// Show a context menu when a node is right clicked.
         /// </summary>
-        protected override void ContextClickedItem(int id) => ShowNodeMenu(root.Find(id));
+        protected override void ContextClickedItem(int id) => ShowNodeMenu(asset.Find(id));
         
         protected override bool CanStartDrag(CanStartDragArgs args)
         {
             Node drag = asset.Find(args.draggedItem.id);
+            if (drag == null) return false;
             if (drag.ID == root.ID) return false;
             if (drag.ParentLocked) return false;
             return true;
@@ -390,8 +393,7 @@ namespace Nexerate.Nodes.Editor
                     AddNodeMenuAttribute attribute = type.GetCustomAttribute<AddNodeMenuAttribute>();
                     if (attribute != null && !type.IsAbstract)
                     {
-                        var menuName = attribute.MenuName;
-                        menu.AddItem(new(menuName), false, () =>
+                        menu.AddItem(new(attribute.MenuName), false, () =>
                         {
                             PerformUndoableAction(() =>
                             {

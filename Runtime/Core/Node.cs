@@ -157,35 +157,44 @@ namespace Nexerate.Nodes
             return SetParent(newParent, true, true);
         }
 
-        internal bool SetParent(Node newParent, bool validate, bool notify)
+        internal bool SetParent(Node newParent, bool validate, bool notify, int? index = null)
         {
             bool valid = !validate || ValidParenting(this, newParent);
 
-            if (valid)
+            if (!valid) return false;
+            
+            if (parent != null)
             {
-                if (parent != null)
+                parent.children.Remove(this);
+                if (notify)
                 {
-                    parent.children.Remove(this);
-                    if (notify)
-                    {
-                        parent.OnChildrenChangedInternal();
-                    }
-                }
-
-                parent = newParent;
-
-                if (parent != null)
-                {
-                    parentID = parent.ID;
-                    parent.children.Add(this);
-                    if (notify)
-                    {
-                        parent.OnChildrenChangedInternal();
-                    }
+                    parent.OnChildrenChangedInternal();
                 }
             }
 
-            //Parent was successfully set to newParent
+            parent = newParent;
+
+            if (parent != null)
+            {
+                parentID = parent.ID;
+
+                if (!index.HasValue)
+                {
+                    parent.children.Add(this);
+                }
+                else
+                {
+                    parent.children.Insert(index.Value, this);
+                }
+
+                if (notify)
+                {
+                    parent.OnChildrenChangedInternal();
+                }
+            }
+            
+
+            //Parent was (most likely) successfully set to newParent
             return parent == newParent;
         }
 
@@ -307,22 +316,25 @@ namespace Nexerate.Nodes
         #endregion
 
         #region Insert
-        public void InsertChild(int index, Node child)
+        public bool InsertChild(int index, Node child)
         {
-            if (child == this) return;
+            //if (child == this) return;
 
             //Child parent is the same, but child was moved
             //SetParent will not call HierarchyChanged, so we need to do it ourselves after the reorder has happened
-            bool reorder = child.parent == this;
+            //bool reorder = child.parent == this;
             //Debug.Log(reorder);
 
             //Execute logic if the parent was successfully set to this node
-            if (child.SetParent(this))
+
+            return child.SetParent(this, true, true, index);
+
+            /*if (child.SetParent(this))
             {
                 children.Remove(child);
                 children.Insert(index, child);
             }
-            OnChildrenChangedInternal();
+            OnChildrenChangedInternal();*/
             //if (reorder) OnChildrenChangedInternal();
         }
         #endregion
