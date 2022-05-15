@@ -149,9 +149,13 @@ namespace Nexerate.Nodes
         #endregion
 
         #region Serialization Logic
-        public void OnBeforeSerialize() => Root.ChildrenChanged -= OnGraphChangedInternal;
+        public void OnBeforeSerialize()
+        {
+            Root.ChildrenChanged -= OnGraphChangedInternal;
+            Root.ChildrenChanged += OnGraphChangedInternal;
+        }
 
-        public void OnAfterDeserialize() => Root.ChildrenChanged += OnGraphChangedInternal; 
+        public void OnAfterDeserialize() { }
         #endregion
 
         #region Get Root Node
