@@ -53,7 +53,7 @@ namespace Nexerate.Nodes.Editor
             //Type must not be abstract, and must be a class
             if (t.IsAbstract || !t.IsClass) return false;
 
-            while(t.BaseType != typeof(NodeComponent) && t.BaseType != null)
+            while (t.BaseType != typeof(NodeComponent) && t.BaseType != null)
             {
                 t = t.BaseType;
             }
@@ -67,7 +67,6 @@ namespace Nexerate.Nodes.Editor
         void Draw()
         {
             DrawComponents(false);
-
             root.Add(AddComponentButton());
         }
 
@@ -93,7 +92,6 @@ namespace Nexerate.Nodes.Editor
 
         void DrawComponent(VisualElement container, SerializedProperty component, int index)
         {
-
             VisualElement componentContainer = new();
             componentContainer.style.borderBottomWidth = 1;
             componentContainer.style.borderBottomColor = DarkGray;
@@ -111,13 +109,7 @@ namespace Nexerate.Nodes.Editor
                 {
                     EditorGUILayout.HelpBox("Missing component!", MessageType.Warning);
                 })
-                {
-                    style =
-                    {
-                        marginTop = 5,
-                        marginBottom = 5
-                    }
-                });
+                { style = { marginTop = 5, marginBottom = 5 } });
             }
             else
             {
@@ -147,20 +139,14 @@ namespace Nexerate.Nodes.Editor
             string header = missing ? "Missing" :component.GetType().Name;
 
             string key = $"{header}EditorFoldout";
-            if (PlayerPrefs.HasKey(key))
-            {
-                foldout.value = PlayerPrefs.GetInt(key) == 1;
-            }
-            else foldout.value = true;
+
+            foldout.value = !PlayerPrefs.HasKey(key) || PlayerPrefs.GetInt(key) == 1;
 
             void InitializeFoldout(GeometryChangedEvent e)
             {
                 foldout.UnregisterCallback<GeometryChangedEvent>(InitializeFoldout);
 
-                foldout.RegisterValueChangedCallback(e =>
-                {
-                    PlayerPrefs.SetInt(key, foldout.value ? 1 : 0);
-                });
+                foldout.RegisterValueChangedCallback(e => PlayerPrefs.SetInt(key, foldout.value ? 1 : 0));
 
                 var toggle = foldout.hierarchy[0];
                 toggle.style.marginRight = 0;
@@ -264,13 +250,13 @@ namespace Nexerate.Nodes.Editor
         void AddComponent(Type component)
         {
             if (component.GetCustomAttribute<DisallowMultiple>() != null)
+            {
                 components.Remove(component);
+            }
 
             Undo.RegisterCompleteObjectUndo(serializedObject.targetObject, "Add Component");
             target.AddComponent(component);
-            Undo.FlushUndoRecordObjects();
 
-            serializedObject.ApplyModifiedProperties();
             EditorUtility.SetDirty(serializedObject.targetObject);
             DrawComponents(true);
         }
@@ -290,13 +276,9 @@ namespace Nexerate.Nodes.Editor
                     components.Add(component.GetType());
             }
 
-            Undo.RegisterCompleteObjectUndo(serializedObject.targetObject, "Remove Component");
-            target.RemoveComponentAt(index);
-            Undo.FlushUndoRecordObjects();
-
+            container.hierarchy[index].Unbind();
+            property.FindPropertyRelative("components").DeleteArrayElementAtIndex(index);
             serializedObject.ApplyModifiedProperties();
-
-            EditorUtility.SetDirty(serializedObject.targetObject);
 
             DrawComponents(true);
         } 
